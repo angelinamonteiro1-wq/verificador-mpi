@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Verificador de MPI — Beers 2023 · STOPP/START v3 2023 · AGS Alternativas 2025</title>
+<style>
+/* Tabler icons inline via Unicode — substituindo webfont externo */
+.ti::before { font-family: inherit; font-style: normal; }
+.ti-stethoscope::before { content: "🩺"; }
+.ti-info-circle::before { content: "ℹ️"; }
+.ti-cpu::before { content: "🤖"; }
+.ti-palette::before { content: "🎨"; }
+.ti-bulb::before { content: "💡"; }
+.ti-pill::before { content: "💊"; }
+.ti-heart-rate-monitor::before { content: "📋"; }
+.ti-search::before { content: "🔍"; }
+.ti-plus::before { content: "+"; font-weight: bold; }
+.ti-clipboard-list::before { content: "📋"; }
+.ti-alert-circle::before { content: "⚠"; }
+.ti-help-circle::before { content: "❓"; }
+.ti-chevron-down::before { content: "▼"; font-size: 10px; }
+.ti-chevron-up::before { content: "▲"; font-size: 10px; }
+.ti-alert-octagon::before { content: "🚨"; }
+.ti-alert-triangle::before { content: "⚠"; }
+.ti-brain::before { content: "🧠"; }
+.ti-arrows-exchange::before { content: "⇄"; }
+.ti-ban::before { content: "🚫"; }
+.ti-circle-plus::before { content: "➕"; }
+.ti-bolt::before { content: "⚡"; }
+.ti-circle-check::before { content: "✅"; }
+.ti-external-link::before { content: "🔗"; }
+.ti-file-text::before { content: "📄"; }
+.ti-download::before { content: "⬇"; }
+.ti-file-word::before { content: "📝"; }
+.ti-history::before { content: "🕐"; }
+.ti-trash::before { content: "🗑"; }
+</style>
+<style>
+  :root {
+    --bg:#ffffff; --bg2:#f5f5f2; --bg3:#efefeb;
+    --text:#1a1a18; --text2:#5a5a56; --text3:#8a8a84;
+    --border:rgba(0,0,0,0.12); --border2:rgba(0,0,0,0.22);
+    --radius:8px; --radius-lg:12px;
+    --red-bg:#FCEBEB; --red-border:#E24B4A; --red-text:#791F1F; --red-body:#501313;
+    --orange-bg:#FAEEDA; --orange-border:#EF9F27; --orange-text:#633806; --orange-body:#412402;
+    --green-bg:#EAF3DE; --green-border:#97C459; --green-text:#27500A; --green-body:#173404;
+    --darkred-bg:#FCEBEB; --darkred-border:#A32D2D; --darkred-text:#501313;
+    --blue-pill-bg:#B5D4F4; --blue-pill-border:#85B7EB; --blue-pill-text:#042C53;
+    --info-bg:#E6F1FB; --info-border:#85B7EB; --info-text:#042C53;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f0eeea;color:var(--text);min-height:100vh;padding:2rem 1rem;}
+  .container{max-width:740px;margin:0 auto;background:var(--bg);border-radius:16px;padding:2rem;border:0.5px solid var(--border);}
+  .header-row{display:flex;align-items:center;gap:10px;margin-bottom:1.25rem;}
+  .header-icon{font-size:22px;color:var(--text2);}
+  h1{font-size:18px;font-weight:500;color:var(--text);}
+  .subtitle{font-size:12px;color:var(--text2);margin-top:2px;}
+  .intro-card{border-radius:var(--radius-lg);border:0.5px solid var(--border);background:var(--bg);padding:1.1rem 1.25rem;margin-bottom:1.25rem;}
+  .intro-title{font-size:14px;font-weight:500;color:var(--text);margin-bottom:.75rem;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .badge-ia{display:inline-flex;align-items:center;gap:5px;background:var(--info-bg);color:var(--info-text);border:0.5px solid var(--info-border);border-radius:999px;font-size:11px;padding:2px 10px;font-weight:500;}
+  .intro-section{margin-bottom:.75rem;}
+  .intro-section:last-child{margin-bottom:0;}
+  .intro-section-title{font-size:12px;font-weight:500;color:var(--text);margin-bottom:3px;}
+  .intro-body{font-size:12px;color:var(--text2);line-height:1.75;}
+  .autoria{margin-top:.75rem;padding-top:.75rem;border-top:0.5px solid var(--border);display:flex;align-items:center;gap:10px;}
+  .avatar{width:38px;height:38px;border-radius:50%;background:var(--info-bg);color:var(--info-text);display:flex;align-items:center;justify-content:center;font-weight:500;font-size:13px;flex-shrink:0;border:0.5px solid var(--info-border);}
+  .autoria-nome{font-size:13px;font-weight:500;color:var(--text);}
+  .autoria-sub{font-size:11px;color:var(--text3);}
+  .stats-row{display:flex;gap:8px;margin-bottom:1.25rem;flex-wrap:wrap;}
+  .stat-card{background:var(--bg2);border-radius:var(--radius);padding:.6rem 1rem;flex:1;min-width:90px;}
+  .stat-num{font-size:20px;font-weight:500;color:var(--text);}
+  .stat-lbl{font-size:11px;color:var(--text2);}
+  .legenda{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:1.25rem;padding:.75rem 1rem;background:var(--bg2);border-radius:var(--radius-lg);}
+  .legenda-titulo{font-size:12px;font-weight:500;color:var(--text2);width:100%;margin-bottom:2px;}
+  .leg-item{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2);}
+  .leg-dot{width:12px;height:12px;border-radius:3px;flex-shrink:0;}
+  .leg-dot.verm{background:#E24B4A;} .leg-dot.lara{background:#EF9F27;} .leg-dot.verd{background:#97C459;} .leg-dot.inte{background:#A32D2D;}
+  .leg-dot.roxo{background:#8B3FC8;} .leg-dot.azulesc{background:#2176AE;}
+  .principles{background:var(--bg2);border-radius:var(--radius-lg);padding:1rem 1.25rem;margin-bottom:1.25rem;}
+  .p-title{font-size:13px;font-weight:500;color:var(--text);margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+  .p-item{font-size:12px;color:var(--text2);padding:5px 0;border-bottom:0.5px solid var(--border);line-height:1.6;}
+  .p-item:last-child{border-bottom:none;}
+  .fonte-small{font-size:11px;color:var(--text3);margin-top:6px;font-style:italic;}
+  .section-label{font-size:13px;color:var(--text2);margin-bottom:6px;display:block;}
+  .tags-area{margin-bottom:8px;min-height:10px;}
+  .tag{display:inline-flex;align-items:center;gap:6px;background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius);padding:4px 10px;font-size:13px;margin:3px;}
+  .tag-rm{cursor:pointer;color:var(--text3);font-size:11px;}
+  .tag-rm:hover{color:#791F1F;}
+  .input-row{display:flex;gap:8px;margin-bottom:1.25rem;}
+  .input-row input,.input-row select{flex:1;font-size:13px;padding:8px 12px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);outline:none;font-family:inherit;}
+  .input-row input:focus,.input-row select:focus{border-color:#378ADD;box-shadow:0 0 0 2px rgba(55,138,221,.15);}
+  .add-btn{font-size:13px;padding:8px 16px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text);cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-family:inherit;white-space:nowrap;}
+  .add-btn:hover{background:var(--bg2);}
+  .check-btn{font-size:14px;padding:11px 24px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text);cursor:pointer;font-weight:500;width:100%;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;}
+  .check-btn:hover{background:var(--bg2);}
+  .divider{border:none;border-top:0.5px solid var(--border);margin:1.25rem 0;}
+  .rc{border-radius:var(--radius-lg);padding:1rem 1.25rem;margin-bottom:1rem;}
+  .rc.nivel-vermelho{background:var(--red-bg);border:1.5px solid var(--red-border);}
+  .rc.nivel-laranja{background:var(--orange-bg);border:1.5px solid var(--orange-border);}
+  .rc.nivel-verde{background:var(--green-bg);border:1px solid var(--green-border);}
+  .rc.nivel-interacao{background:var(--darkred-bg);border:2px solid var(--darkred-border);}
+  .rc.nivel-poli-grave{background:#F3EBFC;border:2px solid #8B3FC8;}
+  .rc.nivel-poli-leve{background:#F3EBFC;border:1.5px solid #B07DE0;}
+  .rt.nivel-poli-grave,.rt.nivel-poli-leve{color:#4A1880;}
+  .rb.nivel-poli-grave,.rb.nivel-poli-leve{color:#2E0F55;}
+  .pill.roxo{background:#DFC8F7;color:#2E0F55;border:0.5px solid #8B3FC8;}
+  .rc.nivel-snc{background:#E8F4FB;border:2px solid #2176AE;}
+  .rt.nivel-snc{color:#0D3B66;}
+  .rb.nivel-snc{color:#0D3B66;}
+  .pill.azul-escuro{background:#A8D4F0;color:#0D3B66;border:0.5px solid #2176AE;}
+  .rc.nivel-cascata{background:#FFF4E5;border:2px solid #D4620A;}
+  .rt.nivel-cascata{color:#7A3500;}
+  .rb.nivel-cascata{color:#4A2000;}
+  .pill.laranja-escuro{background:#FBCFA0;color:#4A2000;border:0.5px solid #D4620A;}
+  .rc.nivel-stopp{background:#FDECEA;border:1.5px solid #C0392B;}
+  .rt.nivel-stopp{color:#7B241C;}
+  .rb.nivel-stopp{color:#641E16;}
+  .rc.nivel-start{background:#E8F8F0;border:1.5px solid #1E8449;}
+  .rt.nivel-start{color:#145A32;}
+  .rb.nivel-start{color:#0B3D20;}
+  .pill.stopp{background:#F5B7B1;color:#641E16;border:0.5px solid #C0392B;}
+  .pill.start{background:#A9DFBF;color:#0B3D20;border:0.5px solid #1E8449;}
+  .desp-box{background:#F0F7FF;border:0.5px solid #85B7EB;border-radius:var(--radius);padding:.6rem .9rem;margin-top:.75rem;}
+  .desp-title{font-size:12px;font-weight:500;color:#042C53;margin-bottom:4px;display:flex;align-items:center;gap:5px;}
+  .desp-link{display:block;font-size:12px;color:#1565C0;text-decoration:none;margin-bottom:2px;word-break:break-all;}
+  .desp-link:hover{text-decoration:underline;}
+  .guide-panel{border-radius:var(--radius-lg);border:0.5px solid var(--border);background:var(--bg);margin-bottom:1.25rem;overflow:hidden;}
+  .guide-header{display:flex;align-items:center;justify-content:space-between;padding:.75rem 1rem;cursor:pointer;user-select:none;background:var(--bg2);border-bottom:0.5px solid var(--border);}
+  .guide-header-left{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500;color:var(--text);}
+  .guide-toggle{font-size:12px;color:var(--text2);display:flex;align-items:center;gap:4px;}
+  .guide-body{padding:1rem 1.25rem;display:none;}
+  .guide-body.open{display:block;}
+  .guide-section{margin-bottom:1rem;padding-bottom:1rem;border-bottom:0.5px solid var(--border);}
+  .guide-section:last-child{margin-bottom:0;padding-bottom:0;border-bottom:none;}
+  .guide-section-title{font-size:12px;font-weight:500;display:flex;align-items:center;gap:8px;margin-bottom:.5rem;}
+  .guide-row{display:flex;align-items:flex-start;gap:10px;margin-bottom:.4rem;}
+  .guide-dot{width:12px;height:12px;border-radius:3px;flex-shrink:0;margin-top:2px;}
+  .guide-text{font-size:12px;color:var(--text2);line-height:1.6;}
+  .guide-text strong{color:var(--text);}
+  .guide-example{display:inline-block;font-size:11px;background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius);padding:2px 8px;margin-top:3px;color:var(--text2);font-style:italic;}
+  .guide-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:.5rem;}
+  .guide-table th{text-align:left;padding:5px 8px;background:var(--bg2);color:var(--text2);font-weight:500;border-bottom:0.5px solid var(--border);}
+  .guide-table td{padding:5px 8px;border-bottom:0.5px solid var(--border);color:var(--text2);vertical-align:top;}
+  .guide-table tr:last-child td{border-bottom:none;}
+  .rt{font-size:14px;font-weight:500;display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;}
+  .rt.nivel-vermelho{color:var(--red-text);} .rt.nivel-laranja{color:var(--orange-text);} .rt.nivel-verde{color:var(--green-text);} .rt.nivel-interacao{color:var(--darkred-text);}
+  .rb{font-size:13px;line-height:1.75;}
+  .rb.nivel-vermelho{color:var(--red-body);} .rb.nivel-laranja{color:var(--orange-body);} .rb.nivel-verde{color:var(--green-body);} .rb.nivel-interacao{color:var(--darkred-text);}
+  .pill{font-size:11px;padding:3px 10px;border-radius:999px;font-weight:500;display:inline-flex;align-items:center;gap:4px;margin:2px;}
+  .pill.vermelho{background:#F09595;color:#501313;border:0.5px solid #E24B4A;}
+  .pill.laranja{background:#FAC775;color:#412402;border:0.5px solid #EF9F27;}
+  .pill.azul{background:var(--blue-pill-bg);color:var(--blue-pill-text);border:0.5px solid var(--blue-pill-border);}
+  .pill.interacao{background:#F7C1C1;color:#501313;border:0.5px solid #A32D2D;}
+  .empty-state{text-align:center;padding:2rem;color:var(--text2);font-size:13px;}
+  .empty-state i{font-size:32px;display:block;margin-bottom:8px;color:var(--text3);}
+  .disclaimer{font-size:11px;color:var(--text3);border-top:0.5px solid var(--border);padding-top:.75rem;margin-top:.75rem;line-height:1.6;}
+  .fonte-italic{font-size:11px;font-style:italic;opacity:.8;}
+  .export-panel{background:var(--bg2);border-radius:var(--radius-lg);border:0.5px solid var(--border);padding:1.1rem 1.25rem;margin-top:1.5rem;}
+  .export-title{font-size:13px;font-weight:500;color:var(--text);margin-bottom:.75rem;display:flex;align-items:center;gap:7px;}
+  .export-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem;}
+  .export-grid .full{grid-column:1/-1;}
+  .export-label{font-size:12px;color:var(--text2);margin-bottom:4px;display:block;}
+  .export-input{width:100%;font-size:13px;padding:8px 12px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);outline:none;font-family:inherit;}
+  .export-input:focus{border-color:#378ADD;box-shadow:0 0 0 2px rgba(55,138,221,.15);}
+  .pdf-btn{font-size:13px;padding:10px 20px;border-radius:var(--radius);border:0.5px solid #378ADD;background:#E6F1FB;color:#042C53;cursor:pointer;font-weight:500;font-family:inherit;display:inline-flex;align-items:center;gap:8px;width:100%;justify-content:center;}
+  .pdf-btn:hover{background:#B5D4F4;}
+  .word-btn{font-size:13px;padding:10px 20px;border-radius:var(--radius);border:0.5px solid #1E5C2E;background:#E8F8F0;color:#0B3D20;cursor:pointer;font-weight:500;font-family:inherit;display:inline-flex;align-items:center;gap:8px;width:100%;justify-content:center;margin-top:8px;}
+  .word-btn:hover{background:#A9DFBF;}
+  .pdf-note{font-size:11px;color:var(--text3);margin-top:.5rem;line-height:1.5;text-align:center;}
+  @media (max-width:600px){
+    .container{padding:1.25rem;}
+    .stats-row,.export-grid{gap:6px;}
+    .input-row,.export-grid{flex-direction:column;grid-template-columns:1fr;}
+    .add-btn{justify-content:center;}
+    .export-grid .full{grid-column:1;}
+  }
+</style>
+</head>
+<body>
+<div style="background:#5B2D8E;color:#fff;text-align:center;padding:12px 20px;font-size:13px;letter-spacing:0.2px;">
+  <strong>© Profa. Dra. Angelina Monteiro Furtado</strong> &nbsp;·&nbsp; <em>Reprodução ou modificação não autorizada é proibida.</em>
+</div>
+<div class="container">
+  <div class="header-row">
+    <i class="ti ti-stethoscope header-icon"></i>
+    <div>
+      <h1>Verificador de Medicamentos Potencialmente Inapropriados em Idosos</h1>
+      <div class="subtitle">Baseado nos Critérios de Beers AGS 2023 · STOPP/START v3 2023 · Alternativas AGS 2025 · Adultos ≥ 65 anos</div>
+    </div>
+  </div>
+
+  <div class="intro-card">
+    <div class="intro-title">
+      <i class="ti ti-info-circle" style="font-size:18px;color:#5a5a56;"></i>
+      Sobre esta ferramenta
+      <span class="badge-ia"><i class="ti ti-cpu" style="font-size:12px;"></i> Claude Sonnet 4.6</span>
+    </div>
+    <div class="intro-body">
+      <div class="intro-section">
+        <div class="intro-section-title">Embasamento científico</div>
+        Esta ferramenta integra <strong>três diretrizes internacionais de referência</strong> para prescrição segura em adultos com 65 anos ou mais:<br><br>
+        <strong>1. Critérios de Beers AGS 2023</strong> — lista americana oficial de MPIs para idosos, organizada em cinco tabelas.<br><br>
+        <strong>2. STOPP/START v3 2023</strong> — critérios europeus complementares ao Beers. O STOPP identifica MPIs a suspender; o START identifica medicamentos clinicamente indicados possivelmente omitidos.<br><br>
+        <strong>3. Alternativas AGS 2025</strong> — estratégias farmacológicas e não farmacológicas baseadas em diretrizes clínicas para cada MPI identificado.
+      </div>
+      <div class="intro-section">
+        <div class="intro-section-title">Como utilizar</div>
+        <strong>1.</strong> Digite o <strong>princípio ativo</strong> de cada medicamento (ex.: diazepam, não Valium®) e clique em "Adicionar".<br>
+        <strong>2.</strong> Selecione as condições clínicas do paciente e clique em "Adicionar".<br>
+        <strong>3.</strong> Clique em "Verificar medicamentos".
+      </div>
+      <div class="intro-section">
+        <div class="intro-section-title">Importante</div>
+        Finalidade educativa e de apoio clínico. Não substitui o julgamento clínico individualizado nem protocolos institucionais.
+      </div>
+    </div>
+    <div class="autoria">
+      <div class="avatar">AF</div>
+      <div>
+        <div class="autoria-nome">Profa. Dra. Angelina Monteiro Furtado</div>
+        <div class="autoria-sub">Ferramenta criada com auxílio de inteligência artificial — Claude Sonnet 4.6 (Anthropic)</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-num">48</div><div class="stat-lbl">classes / fármacos</div></div>
+    <div class="stat-card"><div class="stat-num">8</div><div class="stat-lbl">interações</div></div>
+    <div class="stat-card"><div class="stat-num">21</div><div class="stat-lbl">condições clínicas</div></div>
+    <div class="stat-card"><div class="stat-num">3</div><div class="stat-lbl">diretrizes internacionais</div></div>
+  </div>
+
+  <div class="legenda">
+    <div class="legenda-titulo"><i class="ti ti-palette" style="font-size:13px;vertical-align:-1px;"></i> Legenda de cores</div>
+    <div class="leg-item"><div class="leg-dot verm"></div><strong style="font-size:11px;color:#791F1F;">Vermelho</strong> — MPI com condição agravante</div>
+    <div class="leg-item"><div class="leg-dot lara"></div><strong style="font-size:11px;color:#633806;">Laranja</strong> — MPI a evitar/cautela</div>
+    <div class="leg-item"><div class="leg-dot verd"></div><strong style="font-size:11px;color:#27500A;">Verde</strong> — Nenhum MPI</div>
+    <div class="leg-item"><div class="leg-dot inte"></div><strong style="font-size:11px;color:#501313;">Verm. escuro</strong> — Interação grave</div>
+    <div class="leg-item"><div class="leg-dot roxo"></div><strong style="font-size:11px;color:#4A1880;">Roxo</strong> — Polifarmácia</div>
+    <div class="leg-item"><div class="leg-dot azulesc"></div><strong style="font-size:11px;color:#0D3B66;">Azul escuro</strong> — ≥3 fármacos SNC</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#D4620A;"></div><strong style="font-size:11px;color:#7A3500;">Laranja escuro</strong> — Cascata prescritiva</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#C0392B;"></div><strong style="font-size:11px;color:#7B241C;">Verm. STOPP</strong> — Critério STOPP v3</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#1E8449;"></div><strong style="font-size:11px;color:#145A32;">Verde START</strong> — Medicamento omitido (START v3)</div>
+  </div>
+
+  <div class="guide-panel">
+    <div class="guide-header" onclick="toggleGuide()">
+      <div class="guide-header-left">
+        <i class="ti ti-help-circle" style="font-size:16px;color:#5a5a56;"></i>
+        Como interpretar os alertas desta ferramenta
+      </div>
+      <div class="guide-toggle" id="guide-toggle-icon">
+        <i class="ti ti-chevron-down"></i> Ver orientações
+      </div>
+    </div>
+    <div class="guide-body" id="guide-body">
+      <div class="guide-section">
+        <div class="guide-section-title">
+          <span style="display:flex;gap:6px;">
+            <span style="width:14px;height:14px;background:#EF9F27;border-radius:3px;display:inline-block;"></span>
+            <span style="width:14px;height:14px;background:#E24B4A;border-radius:3px;display:inline-block;"></span>
+          </span>
+          Alertas Beers AGS 2023 — Laranja e Vermelho
+        </div>
+        <div class="guide-row">
+          <div class="guide-dot" style="background:#EF9F27;"></div>
+          <div class="guide-text"><strong>Laranja</strong> — MPI sem condição agravante selecionada.<br><span class="guide-example">Ex.: "diazepam" sem condição → card laranja</span></div>
+        </div>
+        <div class="guide-row">
+          <div class="guide-dot" style="background:#E24B4A;"></div>
+          <div class="guide-text"><strong>Vermelho</strong> — MPI com condição agravante presente.<br><span class="guide-example">Ex.: "diazepam" + "Histórico de quedas ou fraturas" → card vermelho</span></div>
+        </div>
+      </div>
+      <div class="guide-section">
+        <div class="guide-section-title"><span style="width:14px;height:14px;background:#A32D2D;border-radius:3px;display:inline-block;"></span> Interação medicamentosa grave</div>
+        <div class="guide-text">Dois medicamentos que formam combinação perigosa.<br><span class="guide-example">Ex.: "morfina" + "diazepam" → depressão respiratória</span></div>
+      </div>
+      <div class="guide-section">
+        <div class="guide-section-title"><span style="width:14px;height:14px;background:#8B3FC8;border-radius:3px;display:inline-block;"></span> Polifarmácia</div>
+        <div class="guide-text"><span class="guide-example">≥5 medicamentos → polifarmácia</span><br><span class="guide-example">≥10 medicamentos → polifarmácia grave</span></div>
+      </div>
+      <div class="guide-section">
+        <div class="guide-section-title"><span style="width:14px;height:14px;background:#2176AE;border-radius:3px;display:inline-block;"></span> ≥3 fármacos SNC (Tabela 5 Beers)</div>
+        <div class="guide-text">Classes: Antiepiléticos/gabapentinoides · Antidepressivos · Antipsicóticos · Benzodiazepínicos · Z-drugs · Opioides · Relaxantes musculares</div>
+      </div>
+      <div class="guide-section">
+        <div class="guide-section-title"><span style="width:14px;height:14px;background:#D4620A;border-radius:3px;display:inline-block;"></span> Cascata prescritiva</div>
+        <div class="guide-text">Efeito adverso de um fármaco interpretado como nova doença e tratado com outro fármaco.<br><span class="guide-example">Ex.: IBP + AINE; Furosemida + Anlodipino; Biperideno + Haloperidol</span></div>
+      </div>
+      <div class="guide-section">
+        <div class="guide-section-title"><span style="width:14px;height:14px;background:#C0392B;border-radius:3px;display:inline-block;"></span> STOPP v3 2023</div>
+        <div class="guide-text">Critérios europeus de medicamentos a suspender.</div>
+      </div>
+      <div class="guide-section">
+        <div class="guide-section-title"><span style="width:14px;height:14px;background:#1E8449;border-radius:3px;display:inline-block;"></span> START v3 2023</div>
+        <div class="guide-text">Medicamentos possivelmente omitidos — requer condição clínica selecionada E medicamento ausente da lista.<br><span class="guide-example">Ex.: "Fibrilação atrial" selecionada + sem anticoagulante → START A5</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="principles">
+    <div class="p-title"><i class="ti ti-bulb"></i> 5 princípios para aplicar as alternativas (AGS 2025)</div>
+    <div class="p-item">1. Parar um MPI não é o objetivo final — o objetivo é manter a saúde e reduzir riscos.</div>
+    <div class="p-item">2. Considere estratégias não farmacológicas — frequentemente mais eficazes.</div>
+    <div class="p-item">3. Compreender a causa subjacente do sintoma orienta a terapia mais adequada.</div>
+    <div class="p-item">4. MPIs devem ser evitados na maioria das vezes, mas nem sempre — julgamento clínico é essencial.</div>
+    <div class="p-item">5. Utilize recursos e ferramentas de desprescrição disponíveis.</div>
+    <div class="fonte-small">Fontes: Steinman MA et al. J Am Geriatr Soc. 2025;73(9):2657–2677. · O'Mahony D et al. Age Ageing. 2023;52(1):afac279.</div>
+  </div>
+
+  <span class="section-label"><i class="ti ti-pill"></i> Medicamentos em uso — insira o <strong>princípio ativo</strong> (ex.: diazepam, não Valium®)</span>
+  <div class="tags-area" id="med-tags"></div>
+  <div class="input-row">
+    <input type="text" id="med-input" list="farmacos-list" placeholder="Princípio ativo: ex: diazepam, amitriptilina, ibuprofeno..." autocomplete="off"/>
+    <datalist id="farmacos-list"></datalist>
+    <button class="add-btn" onclick="addMed()"><i class="ti ti-plus"></i> Adicionar</button>
+  </div>
+
+  <span class="section-label"><i class="ti ti-heart-rate-monitor"></i> Condições clínicas do paciente</span>
+  <div class="tags-area" id="cond-tags"></div>
+  <div class="input-row">
+    <select id="cond-select">
+      <option value="">Selecione uma condição...</option>
+      <optgroup label="Cardiovascular / Anticoagulação">
+        <option value="insuficiência cardíaca">Insuficiência cardíaca</option>
+        <option value="fibrilação atrial">Fibrilação atrial</option>
+        <option value="tev trombose venosa profunda">TEV / Trombose venosa profunda</option>
+        <option value="hipertensão arterial">Hipertensão arterial</option>
+        <option value="síncope">Síncope</option>
+      </optgroup>
+      <optgroup label="Sistema Nervoso Central / Neuropsiquiátrico">
+        <option value="insônia">Insônia</option>
+        <option value="ansiedade">Ansiedade</option>
+        <option value="delirium">Delirium</option>
+        <option value="demência comprometimento cognitivo">Demência / comprometimento cognitivo</option>
+        <option value="agitação agressão demência">Agitação / agressão em demência</option>
+        <option value="doença de parkinson">Doença de Parkinson</option>
+        <option value="discinesia tardia">Discinesia tardia</option>
+        <option value="histórico de quedas ou fraturas">Histórico de quedas ou fraturas</option>
+        <option value="epilepsia">Epilepsia / convulsões</option>
+        <option value="depressão">Depressão</option>
+      </optgroup>
+      <optgroup label="Dor / Endócrino / Metabólico">
+        <option value="dor crônica nociceptiva">Dor crônica nociceptiva</option>
+        <option value="dor neuropática">Dor neuropática</option>
+        <option value="diabetes mellitus">Diabetes mellitus</option>
+        <option value="osteoporose">Osteoporose</option>
+      </optgroup>
+      <optgroup label="Gastrointestinal">
+        <option value="drge refluxo">DRGE / Refluxo gastroesofágico</option>
+        <option value="gastroparesia náusea">Gastroparesia / Náusea crônica</option>
+        <option value="constipação intestinal">Constipação intestinal</option>
+        <option value="cólica intestinal diarreia">Cólica intestinal / Diarreia</option>
+        <option value="úlcera gástrica duodenal">Úlcera gástrica ou duodenal</option>
+      </optgroup>
+      <optgroup label="Geniturinário / Alérgico">
+        <option value="noctúria poliúria noturna">Noctúria / Poliúria noturna</option>
+        <option value="síndrome geniturinária menopausa">Síndrome geniturinária da menopausa (SGM)</option>
+        <option value="itu recorrente mulheres">ITU recorrente (mulheres)</option>
+        <option value="incontinência urinária mulheres">Incontinência urinária (mulheres)</option>
+        <option value="hiperplasia prostática benigna">Hiperplasia prostática benigna (HPB)</option>
+        <option value="rinite alérgica prurido">Rinite alérgica / Prurido</option>
+      </optgroup>
+      <optgroup label="Renal">
+        <option value="insuficiência renal crcl menor 30">Insuficiência renal (ClCr &lt; 30 mL/min)</option>
+        <option value="insuficiência renal crcl menor 60">Insuficiência renal (ClCr &lt; 60 mL/min)</option>
+        <option value="doença renal crônica">Doença renal crônica</option>
+      </optgroup>
+    </select>
+    <button class="add-btn" onclick="addCond()"><i class="ti ti-plus"></i> Adicionar</button>
+  </div>
+
+  <button class="check-btn" onclick="verificar()">
+    <i class="ti ti-search"></i> Verificar medicamentos
+  </button>
+
+  <hr class="divider"/>
+  <div id="results">
+    <div class="empty-state">
+      <i class="ti ti-clipboard-list"></i>
+      Adicione medicamentos e condições clínicas para verificar possíveis MPIs.
+    </div>
+  </div>
+
+  <div class="export-panel" id="export-panel" style="display:none;">
+    <div class="export-title">
+      <i class="ti ti-file-text" style="font-size:16px;color:#5a5a56;"></i>
+      Exportar relatório
+    </div>
+    <div class="export-grid">
+      <div class="full">
+        <label class="export-label">Nome da pessoa idosa avaliada</label>
+        <input type="text" class="export-input" id="pdf-paciente" placeholder="Nome completo do paciente..."/>
+      </div>
+      <div>
+        <label class="export-label">Data da avaliação</label>
+        <input type="date" class="export-input" id="pdf-data"/>
+      </div>
+      <div>
+        <label class="export-label">Nome do profissional responsável</label>
+        <input type="text" class="export-input" id="pdf-profissional" placeholder="Nome e categoria profissional..."/>
+      </div>
+    </div>
+    <div style="margin-bottom:1rem;">
+      <label class="export-label">Número de registro profissional (CRM, COREN, CRF...)</label>
+      <input type="text" class="export-input" id="pdf-registro" placeholder="Ex.: COREN-PI 123456"/>
+    </div>
+    <button class="pdf-btn" onclick="gerarPDF()">
+      <i class="ti ti-download"></i> Baixar relatório HTML (→ PDF via Ctrl+P)
+    </button>
+    <div class="pdf-note" style="background:#EAF3DE;border:0.5px solid #97C459;border-radius:6px;padding:8px 12px;margin-top:6px;text-align:left;">
+      <strong style="color:#27500A;"><i class="ti ti-info-circle" style="font-size:12px;vertical-align:-1px;"></i> Como salvar em PDF:</strong><br>
+      <span style="color:#173404;">1. Clique no botão → arquivo <strong>.html</strong> é baixado<br>
+      2. Abra no navegador → pressione <strong>Ctrl+P</strong> (ou Cmd+P)<br>
+      3. Selecione <strong>"Salvar como PDF"</strong> → clique em Salvar</span>
+    </div>
+    <button class="word-btn" onclick="gerarWord()">
+      <i class="ti ti-file-word"></i> Exportar relatório em Word (.doc)
+    </button>
+  </div>
+
+</div>
+
+<script>
+const medsArr=[],condsArr=[];
+const SRC1='2023 AGS Beers Criteria® Update Expert Panel. J Am Geriatr Soc. 2023;71(7):2052–2081.';
+const SRC2='Steinman MA et al. AGS Beers Criteria® Alternatives. J Am Geriatr Soc. 2025;73(9):2657–2677.';
+const SRC3="O'Mahony D et al. STOPP/START criteria v3. Age Ageing. 2023;52(1):afac279.";
+const SRCB=SRC1+' '+SRC2+' '+SRC3;
+
+const BEERS=[
+  {drugs:["diazepam","lorazepam","alprazolam","clonazepam","midazolam","temazepam","triazolam","oxazepam","clorazepato","clobazam","estazolam","clordiazepóxido","bromazepam","nitrazepam","flunitrazepam","cloxazolam"],clase:"Benzodiazepínicos",desp:{titulo:"Algoritmo de desprescrição de benzodiazepínicos e hipnóticos",url:"https://deprescribing.org/resources/deprescribing-guidelines-algorithms/"},tabela:"Tabela 2",risco:"Evitar",nivel:"laranja",motivo:"Aumentam risco de comprometimento cognitivo, delirium, quedas e fraturas. Uso com opioides pode causar depressão respiratória, coma e morte.",alt_farm:["TCC-I (terapia cognitivo-comportamental para insônia) — 1ª linha para insônia crônica","Doxepina oral 3–6 mg (insônia)","Antagonistas duais de orexina: daridorexanto, lemborexanto, suvorexanto","Ramelteon (insônia)","Ansiedade: escitalopram, sertralina, venlafaxina, duloxetina, buspirona","Redução gradual (desmame) do benzodiazepínico"],alt_nfarm:["TCC-I: restrição do sono, controle de estímulo, higiene do sono","Ferramentas digitais de TCC-I: Insomnia Coach (VA), SleepEZ","Ansiedade: psicoterapia (TCC, ACT, mindfulness)"],conds_agrav:["delirium","demência comprometimento cognitivo","histórico de quedas ou fraturas","epilepsia","ansiedade","insônia","agitação agressão demência"],fonte:SRCB},
+  {drugs:["zolpidem","eszopiclone","zaleplon","zopiclona","eszopiclona"],clase:"Z-drugs (hipnóticos não-benzodiazepínicos)",tabela:"Tabela 2",risco:"Evitar",nivel:"laranja",motivo:"Efeitos adversos similares aos benzodiazepínicos: delirium, quedas, fraturas. Melhora mínima no sono.",alt_farm:["TCC-I — 1ª linha para insônia crônica","Doxepina oral ≤6 mg","Antagonistas de orexina: daridorexanto, lemborexanto, suvorexanto","Ramelteon"],alt_nfarm:["TCC-I digital (Insomnia Coach, SleepEZ)","Higiene do sono","Programa de restrição de sono estruturado"],conds_agrav:["delirium","demência comprometimento cognitivo","histórico de quedas ou fraturas","insônia"],desp:{titulo:"Algoritmo de desprescrição de Z-drugs / hipnóticos",url:"https://deprescribing.org/resources/deprescribing-guidelines-algorithms/"},fonte:SRCB},
+  {drugs:["difenidramina","hidroxizina","prometazina","clorfeniramina","bromfeniramina","ciproeptadina","dimenidrinato","doxilamina","meclizina","triprolidina","diphenhydramine","hydroxyzine","carbinoxamina"],clase:"Anti-histamínicos de 1ª geração",tabela:"Tabela 2",risco:"Evitar",nivel:"laranja",motivo:"Altamente anticolinérgicos. Risco de confusão, retenção urinária, constipação. Carga anticolinérgica cumulada eleva risco de quedas, delirium e demência.",alt_farm:["Rinite: loratadina, cetirizina, levocetirizina, fexofenadina (2ª/3ª geração — preferidas)","Rinite: spray nasal corticoide (fluticasona)","Prurido seco: emolientes hidratantes 2x/dia","Prurido localizado: anestésicos tópicos, mentol, capsaicina"],alt_nfarm:["Identificar e evitar alérgenos","Lavagem nasal salina","Duchas curtas em água morna para prurido"],conds_agrav:["delirium","demência comprometimento cognitivo","histórico de quedas ou fraturas","hiperplasia prostática benigna","rinite alérgica prurido","insônia"],desp:{titulo:"Recursos de desprescrição — Anticolinérgicos",url:"https://deprescribing.org/resources/deprescribing-guidelines-algorithms/"},fonte:SRCB},
+  {drugs:["amitriptilina","amoxapina","clomipramina","desipramina","doxepina","imipramina","nortriptilina","paroxetina","trimipramina","protriptilina"],clase:"Antidepressivos tricíclicos / forte atividade anticolinérgica",tabela:"Tabela 2",risco:"Evitar",nivel:"laranja",motivo:"Altamente anticolinérgicos, sedativos, causam hipotensão ortostática. Risco de confusão, retenção urinária, arritmias.",alt_farm:["Depressão: SSRIs (escitalopram, sertralina — preferidos em idosos)","Depressão: SNRIs (venlafaxina, duloxetina) com cautela","Dor neuropática: duloxetina (SNRI)","Dor neuropática: gabapentinoides (sem opioides concomitantes)","Insônia: doxepina ≤6 mg é aceitável nessa dose baixa"],alt_nfarm:["Depressão: psicoterapia (TCC), atividade física, suporte psicossocial","Dor: fisioterapia, exercício aquático, acupuntura, TENS"],conds_agrav:["delirium","demência comprometimento cognitivo","histórico de quedas ou fraturas","síncope","insuficiência cardíaca","hiperplasia prostática benigna","depressão","dor neuropática"],desp:{titulo:"Recursos de desprescrição de antidepressivos e tricíclicos",url:"https://deprescribing.org/resources/deprescribing-guidelines-algorithms/"},fonte:SRCB},
+  {drugs:["haloperidol","risperidona","quetiapina","olanzapina","aripiprazol","clorpromazina","flufenazina","perfenazina","brexpiprazol","cariprazina","clozapina","lurasidona","paliperidona","pimavanserin","ziprasidona","amisulprida","levomepromazina"],clase:"Antipsicóticos (1ª e 2ª geração)",tabela:"Tabela 2",risco:"Evitar (salvo indicações aprovadas)",nivel:"laranja",motivo:"Risco aumentado de AVC, declínio cognitivo e mortalidade em demência. Usar apenas como último recurso quando há risco de dano a si ou outros.",alt_farm:["Somente como último recurso — menor dose pelo menor tempo possível","Brexpiprazol: único aprovado FDA para agitação na demência de Alzheimer","Pimavanserin: único aprovado FDA para psicose no Parkinson","Documentar riscos e programar desprescrição periódica"],alt_nfarm:["Programa AGS CoCare: HELP para delirium","Abordagem DICE para sintomas comportamentais","Identificar causas modificáveis: dor, constipação, retenção urinária, infecção"],conds_agrav:["delirium","demência comprometimento cognitivo","agitação agressão demência","doença de parkinson","síncope"],desp:{titulo:"Algoritmo de desprescrição de antipsicóticos",url:"https://deprescribing.org/resources/deprescribing-guidelines-algorithms/"},fonte:SRCB},
+  {drugs:["ibuprofeno","naproxeno","diclofenaco","piroxicam","indometacina","meloxicam","sulindaco","etodolaco","nabumetona","oxaprozina","flurbiprofeno","diflunisal","cetoprofeno","cetorolaco","ketorolac","tenoxicam","nimesulida","lornoxicam","aceclofenaco"],clase:"AINEs não seletivos (via oral)",tabela:"Tabela 2",risco:"Evitar uso crônico",nivel:"laranja",motivo:"Risco de sangramento GI, úlcera péptica, elevação de PA e lesão renal. Riscos dose-dependentes e maiores em >75 anos.",alt_farm:["Paracetamol (acetaminofeno) — 1ª escolha para dor em idosos","AINEs tópicos (diclofenaco gel) — perfil mais favorável","Inibidores de COX-2 (celecoxibe) + protetor gástrico se necessário","Capsaicina tópica, rubefacientes (mentol), lidocaína tópica","Duloxetina para dor musculoesquelética crônica"],alt_nfarm:["Exercício terapêutico — 1ª linha","Fisioterapia","Acupuntura","TCC para dor crônica","TENS"],conds_agrav:["úlcera gástrica duodenal","insuficiência cardíaca","insuficiência renal crcl menor 30","histórico de quedas ou fraturas","osteoporose","dor crônica nociceptiva"],desp:{titulo:"Guia de desprescrição de AINEs",url:"https://www.primaryhealthtas.com.au/wp-content/uploads/2023/03/A-guide-to-deprescribing-non-steroidal-anti-inflammatory-drugs.pdf"},fonte:SRCB},
+  {drugs:["carisoprodol","ciclobenzaprina","ciclobenzaprine","metaxalona","metocarbamol","orfenadrina","orphenadrine","clorzoxazona"],clase:"Relaxantes musculares esqueléticos",tabela:"Tabela 2",risco:"Evitar",nivel:"laranja",motivo:"Mal tolerados por idosos: efeitos anticolinérgicos, sedação e risco aumentado de fraturas. Eficácia questionável.",alt_farm:["Paracetamol para dor musculoesquelética","AINEs tópicos de curto prazo","Duloxetina para dor musculoesquelética crônica"],alt_nfarm:["Fisioterapia — 1ª linha","Exercícios de fortalecimento e alongamento","Calor/frio local","Massagem terapêutica","Acupuntura"],conds_agrav:["histórico de quedas ou fraturas","delirium","demência comprometimento cognitivo","dor crônica nociceptiva"],desp:{titulo:"Recursos gerais de desprescrição",url:"https://deprescribing.org/resources/deprescribing-guidelines-algorithms/"},fonte:SRCB},
+  {drugs:["glibenclamida","glibenclamide","glyburide","glimepirida","glimepiride","gliclazida","glipizida","clorpropamida","gliquidona","tolbutamida"],clase:"Sulfonilureias",desp:{titulo:"Guia de desprescrição de hipoglicemiantes",url:"https://deprescribing.org/resources/deprescribing-guidelines-algorithms/"},tabela:"Tabela 2",risco:"Evitar como 1ª ou 2ª linha",nivel:"laranja",motivo:"Maior risco de eventos cardiovasculares, mortalidade e hipoglicemia vs alternativas. Agentes de longa ação têm risco maior de hipoglicemia prolongada.",alt_farm:["Metformina — 1ª linha para maioria dos idosos (verificar ClCr)","SGLT2i (empagliflozina, dapagliflozina): preferidos em IC, DCV aterosclerótica ou DRC","GLP-1 RAs (liraglutida, semaglutida): preferidos em obesidade, DCV ou DRC","Inibidores DPP-4 (sitagliptina, linagliptina): opção segura","Se sulfonilureia necessária: preferir glipizida (ação curta)"],alt_nfarm:["Dieta com controle de carboidratos","Atividade física regular adaptada"],conds_agrav:["diabetes mellitus","insuficiência renal crcl menor 30","histórico de quedas ou fraturas"],fonte:SRCB},
+  {drugs:["varfarina","warfarin","warfarina","coumadin"],clase:"Varfarina (terapia inicial para FA/TEV)",tabela:"Tabela 2",risco:"Evitar como terapia inicial",nivel:"laranja",motivo:"Maior risco de sangramento grave (especialmente intracraniano) vs DOACs.",alt_farm:["Apixabana — preferida: menor risco de sangramento","Edoxabana — alternativa","Manter varfarina se INR bem controlado >70% no alvo"],alt_nfarm:["FA com alto risco: oclusão percutânea do apêndice atrial esquerdo"],conds_agrav:["fibrilação atrial","tev trombose venosa profunda","úlcera gástrica duodenal","histórico de quedas ou fraturas"],desp:{titulo:"Recursos de desprescrição — Anticoagulantes",url:"https://deprescribing.org/resources/deprescribing-guidelines-algorithms/"},fonte:SRCB},
+  {drugs:["rivaroxabana","rivaroxaban","xarelto"],clase:"Rivaroxabana (uso prolongado FA/TEV)",tabela:"Tabela 2",risco:"Evitar para FA/TEV longo prazo",nivel:"laranja",motivo:"Maior risco de sangramento grave e GI em idosos vs outros DOACs, especialmente apixabana.",alt_farm:["Apixabana — alternativa de escolha","Edoxabana — alternativa"],alt_nfarm:[],conds_agrav:["fibrilação atrial","tev trombose venosa profunda","insuficiência renal crcl menor 30"],desp:{titulo:"Recursos de desprescrição — Anticoagulantes",url:"https://deprescribing.org/resources/deprescribing-guidelines-algorithms/"},fonte:SRCB},
+  {drugs:["dabigatrana","dabigatran","pradaxa"],clase:"Dabigatrana (uso prolongado)",tabela:"Tabela 4",risco:"Usar com cautela",nivel:"laranja",motivo:"Maior risco de sangramento GI vs apixabana. Evitar se ClCr < 30 mL/min.",alt_farm:["Apixabana — preferida","Edoxabana — alternativa"],alt_nfarm:[],conds_agrav:["fibrilação atrial","tev trombose venosa profunda","insuficiência renal crcl menor 30"],desp:{titulo:"Recursos de desprescrição — Anticoagulantes",url:"https://deprescribing.org/resources/deprescribing-guidelines-algorithms/"},fonte:SRCB},
+  {drugs:["amiodarona"],clase:"Amiodarona",desp:{titulo:"Recursos gerais de desprescrição",url:"https://deprescribing.org/resources/deprescribing-guidelines-algorithms/"},tabela:"Tabela 2",risco:"Evitar como 1ª linha em FA (sem IC/HVE)",nivel:"laranja",motivo:"Toxicidades maiores que outros antiarrítmicos.",alt_farm:["Controle de ritmo: sotalol ou dofetilida","Controle de frequência: betabloqueadores (1ª linha)"],alt_nfarm:["Ablação por cateter"],conds_agrav:["fibrilação atrial","insuficiência cardíaca"],fonte:SRCB},
+  {drugs:["digoxina","digoxin","lanoxin"],clase:"Digoxina",desp:{titulo:"Recursos gerais de desprescrição",url:"https://deprescribing.org/resources/deprescribing-guidelines-algorithms/"},tabela:"Tabela 2",risco:"Evitar como 1ª linha em FA/IC — dose > 0,125 mg/dia",nivel:"laranja",motivo:"Em ICFEr: iniciar terapia orientada por diretrizes antes da digoxina.",alt_farm:["ICFEr: sacubitril/valsartana, betabloqueador, ARM, SGLT2i","Controle de frequência em FA: betabloqueadores (1ª linha)"],alt_nfarm:[],conds_agrav:["insuficiência cardíaca","fibrilação atrial","insuficiência renal crcl menor 30","doença renal crônica"],fonte:SRCB},
+  {drugs:["doxazosina","doxazosin","prazosina","prazosin","terazosina","terazosin","alfuzosina"],clase:"Alfa-1 bloqueadores não seletivos (anti-hipertensivos)",tabela:"Tabela 2 / Tabela 3",risco:"Evitar como anti-hipertensivo",nivel:"laranja",motivo:"Alto risco de hipotensão ortostática e danos associados.",alt_farm:["Tiazídicos: clortalidona ou hidroclorotiazida — 1ª linha","IECAs ou BRAs","BCCs di-hidropiridínicos (anlodipino, nifedipino ER)"],alt_nfarm:["Dieta DASH","Exercício físico regular","Redução do sódio"],conds_agrav:["síncope","incontinência urinária mulheres","hipertensão arterial"],desp:{titulo:"Recursos gerais de desprescrição",url:"https://deprescribing.org/resources/deprescribing-guidelines-algorithms/"},fonte:SRCB},
+  {drugs:["clonidina","clonidine","guanfacina","guanfacine","metildopa","methyldopa"],clase:"Alfa-agonistas centrais (anti-hipertensivos)",tabela:"Tabela 2",risco:"Evitar como 1ª linha / Evitar para HA",nivel:"laranja",motivo:"Alto risco de efeitos adversos no SNC, bradicardia e hipotensão ortostática.",alt_farm:["Tiazídicos, IECAs/BRAs, BCCs di-hidropiridínicos"],alt_nfarm:["Dieta DASH, redução do sódio, atividade física"],conds_agrav:["síncope","demência comprometimento cognitivo","hipertensão arterial"],desp:{titulo:"Recursos gerais de desprescrição",url:"https://deprescribing.org/resources/deprescribing-guidelines-algorithms/"},fonte:SRC1},
+  {drugs:["nifedipino","nifedipine","adalat"],clase:"Nifedipino de liberação imediata",tabela:"Tabela 2",risco:"Evitar",nivel:"laranja",motivo:"Potencial para hipotensão grave e precipitação de isquemia miocárdica.",alt_farm:["Nifedipino de liberação prolongada (ER)","Anlodipino","Felodipino"],alt_nfarm:[],conds_agrav:["hipertensão arterial","insuficiência cardíaca","síncope"],desp:{titulo:"Recursos gerais de desprescrição",url:"https://deprescribing.org/resources/deprescribing-guidelines-algorithms/"},fonte:SRC1},
+  {drugs:["omeprazol","esomeprazol","lansoprazol","pantoprazol","rabeprazol","dexlansoprazol","ibeprazol"],clase:"Inibidores de bomba de prótons (IBPs)",tabela:"Tabela 2",risco:"Evitar uso programado > 8 semanas sem indicação",nivel:"laranja",motivo:"Risco de infecção por C. difficile, pneumonia, perda óssea e fraturas com uso prolongado.",alt_farm:["Terapia com alginato para sintomas de escape","Antagonistas H2 (famotidina) para sintomas noturnos","Descontinuação gradual orientada por protocolo"],alt_nfarm:["Modificações dietéticas","Elevação da cabeceira do leito","Controle do peso"],conds_agrav:["osteoporose","histórico de quedas ou fraturas","drge refluxo"],desp:{titulo:"Algoritmo de desprescrição de IBPs",url:"https://deprescribing.org/resources/deprescribing-guidelines-algorithms/"},fonte:SRCB},
+  {drugs:["metoclopramida"],clase:"Metoclopramida",desp:{titulo:"Recursos gerais de desprescrição",url:"https://deprescribing.org/resources/deprescribing-guidelines-algorithms/"},tabela:"Tabela 2",risco:"Evitar (exceto gastroparesia < 12 semanas)",nivel:"laranja",motivo:"Pode causar efeitos extrapiramidais incluindo discinesia tardia. Risco maior em idosos frágeis e com uso prolongado.",alt_farm:["Gengibre 1 mg 2x/dia para náusea","Ondansetrona para náusea","Eritromicina 50–100 mg 4x/dia antes das refeições (gastroparesia, curso curto)"],alt_nfarm:["Dieta de partículas pequenas: alimentos macios, refeições pequenas e frequentes"],conds_agrav:["doença de parkinson","delirium","discinesia tardia","gastroparesia náusea"],fonte:SRCB},
+  {drugs:["atropina","diciclomina","dicicloverina","hiosciamina","escopolamina","clidínio","homatropina"],clase:"Antiespasmódicos GI com forte atividade anticolinérgica",tabela:"Tabela 2",risco:"Evitar",nivel:"laranja",motivo:"Altamente anticolinérgicos, eficácia incerta em idosos.",alt_farm:["Loperamida para diarreia (uso de curto prazo)","SII: rifaximina, antidepressivos em baixa dose, probióticos"],alt_nfarm:["Modificações dietéticas (dieta low-FODMAP)","Psicoterapia direcionada ao intestino"],conds_agrav:["delirium","demência comprometimento cognitivo","hiperplasia prostática benigna","cólica intestinal diarreia"],desp:{titulo:"Recursos de desprescrição — Anticolinérgicos",url:"https://deprescribing.org/resources/deprescribing-guidelines-algorithms/"},fonte:SRCB},
+  {drugs:["estrogênio","estradiol","estriol","estrogenio","estrogen","premarim","tibolona"],clase:"Estrogênio sistêmico (oral/transdérmico)",tabela:"Tabela 2 / Tabela 3",risco:"Evitar iniciar terapia sistêmica",nivel:"laranja",motivo:"Potencial carcinogênico (mama e endométrio). Em mulheres ≥60 anos: maior risco cardíaco, AVC, trombose e demência.",alt_farm:["SGM/atrofia vaginal: estrogênio vaginal tópico de baixa dose (1ª linha)","SGM: DHEA vaginal (prasterona), ospemifeno","Vasomotores: SSRIs, SNRIs, fezolinetanto"],alt_nfarm:["SGM: lubrificantes e hidratantes vaginais não hormonais","Fisioterapia do assoalho pélvico"],conds_agrav:["incontinência urinária mulheres","tev trombose venosa profunda","síndrome geniturinária menopausa","itu recorrente mulheres"],desp:{titulo:"Recursos de desprescrição — Hormônios e Terapia Hormonal",url:"https://deprescribing.org/resources/deprescribing-guidelines-algorithms/"},fonte:SRCB},
+  {drugs:["desmopressina","ddavp","minirin"],clase:"Desmopressina",desp:{titulo:"Recursos gerais de desprescrição",url:"https://deprescribing.org/resources/deprescribing-guidelines-algorithms/"},tabela:"Tabela 2",risco:"Evitar para noctúria/poliúria noturna",nivel:"laranja",motivo:"Alto risco de hiponatremia.",alt_farm:["Bexiga hiperativa: mirabegron (agonista β-3) — preferido","HPB: alfa-1 seletivos (tansulosina)"],alt_nfarm:["Manejo de fluidos (horário, álcool, cafeína)","Treinamento vesical"],conds_agrav:["insuficiência cardíaca","insuficiência renal crcl menor 30","doença renal crônica","noctúria poliúria noturna"],fonte:SRCB},
+  {drugs:["meperidina","petidina","pethidine","demerol"],clase:"Meperidina / Petidina",tabela:"Tabela 2",risco:"Evitar",nivel:"laranja",motivo:"Analgésico oral ineficaz nas doses comuns. Maior risco de neurotoxicidade e delirium do que outros opioides.",alt_farm:["Escolher outro opioide (morfina em doses baixas tituladas, oxicodona)","Paracetamol para dor leve/moderada"],alt_nfarm:["Fisioterapia, técnicas não farmacológicas"],conds_agrav:["delirium","demência comprometimento cognitivo","insuficiência renal crcl menor 30"],desp:{titulo:"Recursos de desprescrição de opioides",url:"https://deprescribing.org/resources/deprescribing-guidelines-algorithms/"},fonte:SRCB},
+  {drugs:["benztropina","biperideno","triexifenidil","trihexiphenidyl"],clase:"Agentes antiparkinsonistas com forte atividade anticolinérgica",tabela:"Tabela 2",risco:"Evitar",nivel:"laranja",motivo:"Não recomendados para sintomas extrapiramidais por antipsicóticos. Ineficazes para discinesia tardia.",alt_farm:["Parkinson: levodopa/carbidopa — 1ª linha","Parkinson: agonistas dopaminérgicos (pramipexol, ropinirol)","Discinesia tardia: valbenazina, deutetrabenazina"],alt_nfarm:["Exercícios e fisioterapia","Estimulação cerebral profunda para casos avançados"],conds_agrav:["doença de parkinson","delirium","demência comprometimento cognitivo","hiperplasia prostática benigna","discinesia tardia"],desp:{titulo:"Recursos de desprescrição — Anticolinérgicos",url:"https://deprescribing.org/resources/deprescribing-guidelines-algorithms/"},fonte:SRCB},
+  {drugs:["fenobarbital","fenobarbita","pentobarbital","secobarbital","butalbital","primidona","primidone"],clase:"Barbitúricos",desp:{titulo:"Recursos gerais de desprescrição",url:"https://deprescribing.org/resources/deprescribing-guidelines-algorithms/"},tabela:"Tabela 2",risco:"Evitar",nivel:"laranja",motivo:"Alta taxa de dependência física, tolerância, maior risco de sobredose em doses baixas.",alt_farm:["Epilepsia: levetiracetam, lamotrigina (preferidos)","Insônia: TCC-I, antagonistas de orexina, doxepina ≤6 mg, ramelteon"],alt_nfarm:["TCC-I para insônia"],conds_agrav:["epilepsia","histórico de quedas ou fraturas","delirium","insônia"],fonte:SRCB},
+  {drugs:["omeprazol","esomeprazol","lansoprazol","pantoprazol","rabeprazol","dexlansoprazol"],clase:"IBPs (verificar indicação)",tabela:"Tabela 2",risco:"Evitar uso > 8 semanas sem indicação",nivel:"laranja",motivo:"Risco de infecção por C. difficile, pneumonia, perda óssea com uso prolongado.",alt_farm:["Famotidina para sintomas noturnos","Alginato para escape de sintomas","Desprescrição gradual"],alt_nfarm:["Elevação da cabeceira","Não comer 2–3h antes de deitar","Controle do peso"],conds_agrav:["osteoporose","histórico de quedas ou fraturas"],desp:{titulo:"Algoritmo de desprescrição de IBPs",url:"https://deprescribing.org/resources/deprescribing-guidelines-algorithms/"},fonte:SRCB},
+  {drugs:["gabapentina","gabapentin","neurontin","pregabalina","pregabalin","lyrica"],clase:"Gabapentinoides",desp:{titulo:"Recursos de desprescrição de gabapentinoides",url:"https://deprescribing.org/resources/deprescribing-guidelines-algorithms/"},tabela:"Tabela 5 / Tabela 6",risco:"Cautela com opioides; ajuste renal se ClCr < 60",nivel:"laranja",motivo:"Combinação com opioides: risco grave de sedação e depressão respiratória. Necessidade de ajuste de dose renal.",alt_farm:["Dor neuropática: duloxetina (SNRI) como alternativa principal","Capsaicina, lidocaína tópicos"],alt_nfarm:["Fisioterapia","TENS","Acupuntura","TCC para dor crônica"],conds_agrav:["insuficiência renal crcl menor 60","histórico de quedas ou fraturas","doença renal crônica","dor neuropática"],fonte:SRCB},
+  {drugs:["tramadol","tramal","ultram"],clase:"Tramadol",desp:{titulo:"Recursos de desprescrição de opioides e analgésicos",url:"https://deprescribing.org/resources/deprescribing-guidelines-algorithms/"},tabela:"Tabela 4 / Tabela 6",risco:"Cautela — ajuste se ClCr < 30 mL/min",nivel:"laranja",motivo:"Risco de efeitos adversos no SNC, hiponatremia/SIADH, quedas e convulsões.",alt_farm:["Paracetamol — 1ª escolha para dor em idosos","AINEs tópicos","Duloxetina para dor musculoesquelética crônica"],alt_nfarm:["Fisioterapia","Calor local","TENS","Acupuntura"],conds_agrav:["insuficiência renal crcl menor 30","histórico de quedas ou fraturas","epilepsia"],fonte:SRC1},
+  {drugs:["oxibutinina","oxybutynin","tolterodina","tolterodine","solifenacina","solifenacin","darifenacina","darifenacin","fesoterodina","fesoterodine","tróspio","trospium","flavoxato"],clase:"Antimuscarínicos para bexiga hiperativa",tabela:"Tabela 7",risco:"Cautela — alta carga anticolinérgica",nivel:"laranja",motivo:"Forte atividade anticolinérgica. Oxibutinina: maior evidência de efeitos cognitivos adversos.",alt_farm:["Mirabegron (agonista β-3) — preferido em idosos","Oxibutinina tópica (menor absorção sistêmica)","Refratários: toxina botulínica, estimulação sacral"],alt_nfarm:["Fisioterapia do assoalho pélvico / exercícios de Kegel — 1ª linha","Treinamento vesical","Biofeedback"],conds_agrav:["demência comprometimento cognitivo","delirium","histórico de quedas ou fraturas","hiperplasia prostática benigna"],desp:{titulo:"Algoritmo de desprescrição de antimuscarínicos vesicais",url:"https://deprescribing.org/resources/deprescribing-guidelines-algorithms/"},fonte:SRCB},
+  {drugs:["nitrofurantoína","nitrofurantoin","macrobid","macrodantina"],clase:"Nitrofurantoína",desp:{titulo:"Recursos gerais de desprescrição",url:"https://deprescribing.org/resources/deprescribing-guidelines-algorithms/"},tabela:"Tabela 2 / Tabela 6",risco:"Evitar se ClCr < 30 mL/min ou uso prolongado",nivel:"laranja",motivo:"Toxicidade pulmonar, hepatotoxicidade e neuropatia periférica com uso prolongado ou em disfunção renal.",alt_farm:["Fosfomicina","Cefalexina para ITU não complicada","ITU recorrente: estrogênio vaginal (1ª linha), metenamina hipurato"],alt_nfarm:["Boa hidratação","Higiene perineal adequada"],conds_agrav:["insuficiência renal crcl menor 30","doença renal crônica","itu recorrente mulheres"],fonte:SRCB},
+  {drugs:["baclofeno","baclofen","lioresal"],clase:"Baclofeno",desp:{titulo:"Recursos gerais de desprescrição",url:"https://deprescribing.org/resources/deprescribing-guidelines-algorithms/"},tabela:"Tabela 6",risco:"Evitar se eGFR < 60 mL/min",nivel:"laranja",motivo:"Risco aumentado de encefalopatia com hospitalização em idosos com eGFR < 60 mL/min.",alt_farm:["Tizanidina com cautela","Toxina botulínica para espasticidade focal"],alt_nfarm:["Fisioterapia para espasticidade","Hidroterapia"],conds_agrav:["insuficiência renal crcl menor 60","doença renal crônica"],fonte:SRC1},
+  {drugs:["pioglitazona","rosiglitazona","actos","avandia"],clase:"Tiazolidinedionas",desp:{titulo:"Recursos gerais de desprescrição — Hipoglicemiantes",url:"https://deprescribing.org/resources/deprescribing-guidelines-algorithms/"},tabela:"Tabela 3",risco:"Cautela em IC / Evitar em IC sintomática",nivel:"laranja",motivo:"Potencial de promover retenção de fluidos e exacerbar insuficiência cardíaca.",alt_farm:["Inibidores DPP-4","Análogos GLP-1","Metformina se ClCr adequado"],alt_nfarm:["Dieta com controle de carboidratos","Atividade física adaptada"],conds_agrav:["insuficiência cardíaca","diabetes mellitus"],fonte:SRC1},
+  {drugs:["megestrol","acetato de megestrol","megace"],clase:"Megestrol",desp:{titulo:"Recursos gerais de desprescrição",url:"https://deprescribing.org/resources/deprescribing-guidelines-algorithms/"},tabela:"Tabela 2",risco:"Evitar",nivel:"laranja",motivo:"Efeito mínimo no peso. Aumenta risco de eventos trombóticos e possivelmente morte em idosos.",alt_farm:["Mirtazapina se depressão associada","Suplementos nutricionais calórico-densos"],alt_nfarm:["Assistência na alimentação","Identificar medicamentos que afetam paladar"],conds_agrav:["tev trombose venosa profunda"],fonte:SRCB}
+];
+
+const INTERACOES=[
+  {drugs:["morfina","codeína","oxicodona","tramadol","fentanil","metadona","hidromorfona","buprenorfina","tapentadol","petidina","meperidina"],interagem_com:["diazepam","lorazepam","alprazolam","clonazepam","midazolam","temazepam","triazolam","oxazepam","clorazepato","clobazam","estazolam","clordiazepóxido","bromazepam","nitrazepam"],alerta:"Interação grave: Opioide + Benzodiazepínico",motivo:"Risco grave de sedação profunda, depressão respiratória, coma e morte.",rec:"Evitar combinação. Se imprescindível: menor dose possível, monitoramento rigoroso.",fonte:SRCB},
+  {drugs:["morfina","codeína","oxicodona","fentanil","metadona","hidromorfona","buprenorfina","tramadol"],interagem_com:["gabapentina","pregabalina","neurontin","lyrica"],alerta:"Interação grave: Opioide + Gabapentinoide",motivo:"Risco de sedação grave, depressão respiratória e morte.",rec:"Evitar. Exceção: transição de opioide para gabapentinoide com cautela extrema.",fonte:SRCB},
+  {drugs:["lítio","lithium","carbonato de lítio"],interagem_com:["captopril","enalapril","lisinopril","ramipril","perindopril","losartana","valsartana","irbesartana","candesartana","telmisartana","sacubitril","entresto"],alerta:"Interação: Lítio + IECA/BRA/ARNI",motivo:"Risco aumentado de toxicidade do lítio.",rec:"Evitar combinação. Se necessária: monitorar concentrações de lítio regularmente.",fonte:SRC1},
+  {drugs:["lítio","lithium","carbonato de lítio"],interagem_com:["furosemida","bumetanida","torasemida"],alerta:"Interação: Lítio + Diurético de alça",motivo:"Risco aumentado de toxicidade do lítio.",rec:"Evitar. Monitorar concentrações de lítio se combinação necessária.",fonte:SRC1},
+  {drugs:["varfarina","warfarin","warfarina"],interagem_com:["amiodarona","ciprofloxacino","eritromicina","claritromicina","trimetoprim-sulfametoxazol","bactrim","fluoxetina","paroxetina","sertralina","escitalopram","citalopram"],alerta:"Interação: Varfarina + Inibidores do metabolismo / SSRIs",motivo:"Risco aumentado de sangramento por inibição do metabolismo da varfarina ou potenciação anticoagulante.",rec:"Evitar se possível. Se necessário: monitorar INR atentamente.",fonte:SRC1},
+  {drugs:["fenitoína","phenytoin","hidantal"],interagem_com:["trimetoprim-sulfametoxazol","bactrim"],alerta:"Interação: Fenitoína + Trimetoprim-sulfametoxazol",motivo:"Risco aumentado de toxicidade da fenitoína.",rec:"Evitar combinação. Monitorar níveis de fenitoína se necessária.",fonte:SRC1},
+  {drugs:["teofilina","theophylline","aminofilina"],interagem_com:["cimetidina","ciprofloxacino"],alerta:"Interação: Teofilina + Cimetidina ou Ciprofloxacino",motivo:"Risco aumentado de toxicidade da teofilina.",rec:"Evitar combinação. Monitorar níveis séricos de teofilina.",fonte:SRC1},
+  {drugs:["doxazosina","prazosina","terazosina"],interagem_com:["furosemida","bumetanida","torasemida"],alerta:"Interação: Alfa-1 bloqueador + Diurético de alça (mulheres)",motivo:"Risco aumentado de incontinência urinária em mulheres idosas.",rec:"Evitar em mulheres idosas, salvo se ambas as condições exigirem esses fármacos.",fonte:SRC1}
+];
+
+let lastResults=[];
+
+function norm(s){return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim();}
+function match(input,list){const n=norm(input);return list.some(d=>{const nd=norm(d);return n.includes(nd)||nd.includes(n);});}
+
+const TODOS_FARMACOS=["aceclofenaco","alendronato","alprazolam","amiodarona","amilorida","aminofilina","amitriptilina","amoxapina","anlodipino","atenolol","atropina","baclofeno","biperideno","bisacodil","bisoprolol","bromazepam","bromfeniramina","buprenorfina","bupropiona","buspirone","butalbital","canagliflozina","captopril","carbonato de lítio","carvedilol","cetirizina","ciprofloxacino","cilostazol","cimetidina","citalopram","clobazam","clomipramina","clonazepam","clonidina","clorazepato","clordiazepóxido","clorpropamida","clortalidona","clorzoxazona","colchicina","codeína","dabigatrana","dapagliflozina","darifenacina","desmopressina","desipramina","dexlansoprazol","diazepam","diciclomina","difenidramina","digoxina","diltiazem","dimenidrinato","domperidona","doxazosina","doxepina","doxilamina","dronedarona","duloxetina","edoxabana","empagliflozina","enalapril","escitalopram","esomeprazol","eszopiclone","estazolam","estrogênio","famotidina","fenobarbital","fenitoína","fentanil","fesoterodina","fexofenadina","flufenazina","fluoxetina","flurbiprofeno","furosemida","gabapentina","glibenclamida","gliclazida","glimepirida","glipizida","guanfacina","haloperidol","hidroclorotiazida","hidroxizina","hiosciamina","ibuprofeno","ibeprazol","imipramina","indometacina","insulina glargina","insulina detemir","insulina degludeca","insulina regular","irbesartana","ketorolac","lactulose","lamotrigina","lansoprazol","levetiracetam","levomepromazina","levodopa","linagliptina","lisinopril","lítio","lorazepam","losartana","lurasidona","meloxicam","meperidina","megestrol","metaxalona","metocarbamol","metoclopramida","metformina","metildopa","metoprolol","midazolam","mirtazapina","morfina","naproxeno","nebivolol","nifedipino","nitrazepam","nitrofurantoína","nortriptilina","olanzapina","omeprazol","ondansetrona","orfenadrina","oxazepam","oxibutinina","oxicodona","paliperidona","pantoprazol","paroxetina","perfenazina","petidina","pioglitazona","pimavanserin","piroxicam","polietilenoglicol","pramipexol","prasugrel","prazosina","pregabalina","primidona","prometazina","quetiapina","rabeprazol","ramipril","risperidona","rivaroxabana","ropinirol","sacubitril","semaglutida","sena","sertralina","sitagliptina","solifenacina","temazepam","terazosina","teofilina","ticagrelor","tizanidina","tolterodina","tramadol","triazolam","triexifenidil","trimetoprim","trospium","valsartana","venlafaxina","varfarina","verapamil","ziprasidona","zolpidem","zopiclona"].sort();
+
+function initAutocomplete(){
+  const dl=document.getElementById('farmacos-list');
+  if(!dl)return;
+  dl.innerHTML=TODOS_FARMACOS.map(f=>'<option value="'+f+'">').join('');
+}
+
+function addMed(){
+  const inp=document.getElementById('med-input');
+  const v=inp.value.trim();
+  if(!v)return;
+  const normV=norm(v);
+  if(medsArr.some(m=>norm(m)===normV)){inp.value='';return;}
+  medsArr.push(v);
+  renderTags('med-tags',medsArr,'med');
+  inp.value='';
+}
+function addCond(){const sel=document.getElementById('cond-select');const v=sel.value;if(!v||condsArr.includes(v))return;condsArr.push(v);renderTags('cond-tags',condsArr,'cond');sel.value='';}
+function removeItem(t,i){if(t==='med'){medsArr.splice(i,1);renderTags('med-tags',medsArr,'med');}else{condsArr.splice(i,1);renderTags('cond-tags',condsArr,'cond');}}
+function renderTags(id,arr,type){document.getElementById(id).innerHTML=arr.map((v,i)=>`<span class="tag">${v}<span class="tag-rm" onclick="removeItem('${type}',${i})"> ✕</span></span>`).join('');}
+
+document.addEventListener('DOMContentLoaded',function(){
+  initAutocomplete();
+  document.getElementById('med-input').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();addMed();}});
+});
+
+function toggleGuide(){
+  const body=document.getElementById('guide-body');
+  const icon=document.getElementById('guide-toggle-icon');
+  const isOpen=body.classList.contains('open');
+  if(isOpen){body.classList.remove('open');icon.innerHTML='<i class="ti ti-chevron-down"></i> Ver orientações';}
+  else{body.classList.add('open');icon.innerHTML='<i class="ti ti-chevron-up"></i> Ocultar orientações';}
+}
+
+function verificar(){
+  const cont=document.getElementById('results');
+  if(!medsArr.length&&!condsArr.length){
+    cont.innerHTML='<div class="empty-state"><i class="ti ti-alert-circle"></i>Adicione medicamentos e/ou condições clínicas para verificar.</div>';
+    return;
+  }
+  const normConds=condsArr.map(norm);
+  lastResults=[];
+  let html='';let found=false;
+
+  // POLIFARMÁCIA
+  const totalMeds=medsArr.length;
+  if(totalMeds>=10){
+    found=true;
+    const msg='Polifarmácia grave: '+totalMeds+' medicamentos (≥10). Risco muito elevado de eventos adversos, interações, quedas, hospitalizações e mortalidade. Revisão farmacoterapêutica completa é fortemente recomendada.';
+    const rec=['Revisão farmacoterapêutica completa com equipe multiprofissional','Aplicar critérios de desprescrição para cada medicamento','Priorizar MPIs do Beers para revisão urgente','Avaliar metas terapêuticas individualizadas','Utilizar ferramentas de desprescrição: deprescribing.org'];
+    lastResults.push({type:'poli',nivel:'grave',total:totalMeds,msg,rec});
+    html+=`<div class="rc nivel-poli-grave"><div class="rt nivel-poli-grave"><i class="ti ti-alert-octagon"></i> Polifarmácia grave <span class="pill roxo">${totalMeds} medicamentos — ≥10</span></div><div class="rb nivel-poli-grave"><strong>⚠ ${msg}</strong><br><br><strong>Recomendações:</strong><br>${rec.map(r=>`• ${r}`).join('<br>')}<br><br><span class="fonte-italic">Fonte: ${SRC1}</span></div></div>`;
+  } else if(totalMeds>=5){
+    found=true;
+    const msg='Polifarmácia: '+totalMeds+' medicamentos (≥5). Aumenta risco de interações, eventos adversos, quedas e não adesão em idosos.';
+    const rec=['Revisar periodicamente a necessidade de cada medicamento','Questionar se cada fármaco tem indicação clara, efetividade e segurança','Considerar desprescrição de medicamentos sem benefício claro','deprescribing.org'];
+    lastResults.push({type:'poli',nivel:'leve',total:totalMeds,msg,rec});
+    html+=`<div class="rc nivel-poli-leve"><div class="rt nivel-poli-leve"><i class="ti ti-alert-triangle"></i> Polifarmácia <span class="pill roxo">${totalMeds} medicamentos — ≥5</span></div><div class="rb nivel-poli-leve"><strong>${msg}</strong><br><br><strong>Recomendações:</strong><br>${rec.map(r=>`• ${r}`).join('<br>')}<br><br><span class="fonte-italic">Fonte: ${SRC1}</span></div></div>`;
+  }
+
+  // ≥3 FÁRMACOS SNC (Tabela 5 Beers)
+  const SNC_CLASSES=[
+    {label:'Antiepiléticos / gabapentinoides',drugs:["fenitoína","carbamazepina","oxcarbazepina","valproato","ácido valpróico","lamotrigina","levetiracetam","topiramato","gabapentina","pregabalina","fenobarbital","primidona","clonazepam","clobazam"]},
+    {label:'Antidepressivos',drugs:["amitriptilina","clomipramina","desipramina","doxepina","imipramina","nortriptilina","paroxetina","fluoxetina","sertralina","escitalopram","citalopram","venlafaxina","duloxetina","mirtazapina","bupropiona","trazodona","trimipramina"]},
+    {label:'Antipsicóticos',drugs:["haloperidol","risperidona","quetiapina","olanzapina","aripiprazol","clorpromazina","flufenazina","perfenazina","brexpiprazol","cariprazina","clozapina","lurasidona","paliperidona","pimavanserin","ziprasidona","amisulprida","levomepromazina"]},
+    {label:'Benzodiazepínicos',drugs:["diazepam","lorazepam","alprazolam","clonazepam","midazolam","temazepam","triazolam","oxazepam","clorazepato","estazolam","clordiazepóxido","bromazepam","nitrazepam","flunitrazepam"]},
+    {label:'Z-drugs (hipnóticos)',drugs:["zolpidem","eszopiclone","zaleplon","zopiclona"]},
+    {label:'Opioides',drugs:["morfina","codeína","oxicodona","tramadol","fentanil","metadona","hidromorfona","buprenorfina","tapentadol","petidina","meperidina"]},
+    {label:'Relaxantes musculares',drugs:["carisoprodol","ciclobenzaprina","metaxalona","metocarbamol","orfenadrina","clorzoxazona","baclofeno","tizanidina"]}
+  ];
+  const sncEncontrados=[];
+  SNC_CLASSES.forEach(cls=>{
+    const matched=medsArr.filter(m=>cls.drugs.some(d=>{const nd=norm(d);const nm=norm(m);return nm.includes(nd)||nd.includes(nm);}));
+    if(matched.length>0)sncEncontrados.push({label:cls.label,matched});
+  });
+  if(sncEncontrados.length>=3){
+    found=true;
+    const listaClasses=sncEncontrados.map(c=>`<strong>${c.label}</strong>: ${c.matched.join(', ')}`).join('<br>');
+    const totalClasses=sncEncontrados.length;
+    const alertMsg=`Combinação de ${totalClasses} classes de fármacos SNC. Os Critérios de Beers 2023 (Tabela 5) recomendam evitar ≥3 agentes SNC simultâneos em idosos — risco elevado de quedas e fraturas.`;
+    lastResults.push({type:'snc',totalClasses,classes:sncEncontrados,alertMsg});
+    html+=`<div class="rc nivel-snc"><div class="rt nivel-snc"><i class="ti ti-brain"></i> Combinação de ≥3 fármacos SNC <span class="pill azul-escuro">${totalClasses} classes — Tabela 5 Beers 2023</span></div><div class="rb nivel-snc"><strong>⚠ ${alertMsg}</strong><br><br><strong>Classes identificadas:</strong><br>${listaClasses}<br><br><strong>Riscos:</strong> Quedas, fraturas, sedação excessiva, comprometimento cognitivo e delirium.<br><br><strong>Recomendações:</strong><br>• Revisar a necessidade de cada agente SNC<br>• Reduzir ao mínimo necessário<br>• Se opioides + benzodiazepínicos ou gabapentinoides: alto risco — avaliar substituição urgente<br>• Estratégias não farmacológicas para as condições subjacentes<br><br><span class="fonte-italic">Fonte: ${SRC1} — Tabela 5.</span></div></div>`;
+  }
+
+  // CASCATAS PRESCRITIVAS
+  const CASCATAS=[
+    {trigger:["metoclopramida"],causa:["levodopa","pramipexol","ropinirol"],descricao:"Metoclopramida + Antiparkinsonianos",explicacao:"A metoclopramida antagoniza efeitos da levodopa e agonistas dopaminérgicos, exacerbando sintomas do Parkinson. Sugere cascata prescritiva.",alternativa:"Substituir metoclopramida por ondansetrona para náuseas ou eritromicina para gastroparesia.",desp:"https://deprescribing.org/resources/deprescribing-guidelines-algorithms/"},
+    {trigger:["omeprazol","esomeprazol","lansoprazol","pantoprazol","rabeprazol","dexlansoprazol"],causa:["ibuprofeno","naproxeno","diclofenaco","piroxicam","indometacina","meloxicam","cetorolaco","ketorolac","etodolaco","nimesulida","aceclofenaco","cetoprofeno"],descricao:"IBP + AINE",explicacao:"O IBP pode ter sido prescrito para tratar sintomas GI (azia, dispepsia, úlcera) causados pelo AINE. A solução ideal é rever a necessidade do AINE, não apenas proteger o estômago.",alternativa:"Reavaliar necessidade do AINE; substituir por paracetamol ou AINEs tópicos. Desprescrever IBP se AINE suspenso.",desp:"https://deprescribing.org/resources/deprescribing-guidelines-algorithms/"},
+    {trigger:["furosemida","bumetanida","torasemida"],causa:["anlodipino","nifedipino","felodipino","lercanidipino"],descricao:"Diurético de alça + Bloqueador de canal de cálcio",explicacao:"O edema periférico é efeito adverso frequente dos BCCs di-hidropiridínicos. Usar diurético para tratar esse edema configura cascata prescritiva — o edema por BCC geralmente não responde bem a diuréticos.",alternativa:"Avaliar se edema é causado pelo BCC; reduzir dose, trocar anti-hipertensivo ou associar IECA/BRA.",desp:"https://deprescribing.org/resources/deprescribing-guidelines-algorithms/"},
+    {trigger:["biperideno","benztropina","triexifenidil"],causa:["haloperidol","risperidona","olanzapina","quetiapina","aripiprazol","clorpromazina","flufenazina","perfenazina","amisulprida","levomepromazina"],descricao:"Anticolinérgico antiparkinsônico + Antipsicótico",explicacao:"Efeitos extrapiramidais causados pelo antipsicótico estão sendo tratados com anticolinérgico em vez de se reavaliar o antipsicótico.",alternativa:"Revisar necessidade e dose do antipsicótico; considerar trocar por atípico com menor risco extrapiramidal.",desp:"https://deprescribing.org/resources/deprescribing-guidelines-algorithms/"},
+    {trigger:["sena","bisacodil","lactulose","macrogol","polietilenoglicol"],causa:["codeína","morfina","oxicodona","tramadol","fentanil","metadona","hidromorfona","buprenorfina","tapentadol"],descricao:"Laxativo + Opioide",explicacao:"Constipação é efeito adverso universal dos opioides. Manter o laxativo enquanto o opioide estiver em uso. Oportunidade: reavaliar se o opioide pode ser reduzido.",alternativa:"Manter o laxativo. Reavaliar necessidade do opioide; tentar redução de dose ou substituição por analgésicos não opioides.",desp:"https://deprescribing.org/resources/deprescribing-guidelines-algorithms/"},
+    {trigger:["captopril","enalapril","lisinopril","ramipril","losartana","valsartana","anlodipino","hidroclorotiazida","clortalidona"],causa:["ibuprofeno","naproxeno","diclofenaco","piroxicam","indometacina","meloxicam","aceclofenaco","nimesulida"],descricao:"Anti-hipertensivo + AINE",explicacao:"AINEs podem elevar PA e antagonizar anti-hipertensivos. O AINE pode estar contribuindo para pressão descontrolada que leva ao escalonamento anti-hipertensivo.",alternativa:"Substituir AINE por paracetamol ou AINEs tópicos. Monitorar PA após suspensão.",desp:"https://deprescribing.org/resources/deprescribing-guidelines-algorithms/"}
+  ];
+
+  CASCATAS.forEach(item=>{
+    const triggerMed=medsArr.find(m=>item.trigger.some(d=>{const nd=norm(d);const nm=norm(m);return nm.includes(nd)||nd.includes(nm);}));
+    const causaMed=medsArr.find(m=>item.causa.some(d=>{const nd=norm(d);const nm=norm(m);return nm.includes(nd)||nd.includes(nm);}));
+    if(!triggerMed||!causaMed)return;
+    found=true;
+    lastResults.push({type:'cascata',descricao:item.descricao,triggerMed,causaMed,explicacao:item.explicacao,alternativa:item.alternativa,desp:item.desp});
+    html+=`<div class="rc nivel-cascata"><div class="rt nivel-cascata"><i class="ti ti-arrows-exchange"></i> Possível cascata prescritiva <span class="pill laranja-escuro">${item.descricao}</span></div><div class="rb nivel-cascata"><strong>Combinação:</strong> ${triggerMed} + ${causaMed}<br><br><strong>Situação:</strong> ${item.explicacao}<br><br><strong>Recomendação:</strong> ${item.alternativa}<div class="desp-box"><div class="desp-title"><i class="ti ti-external-link" style="font-size:13px;"></i> Recurso de desprescrição</div><a class="desp-link" href="${item.desp}" target="_blank">${item.desp}</a></div><br><span class="fonte-italic">Fonte: ${SRC1}</span></div></div>`;
+  });
+
+  // BEERS
+  BEERS.forEach(item=>{
+    const matchedDrug=medsArr.find(m=>match(m,item.drugs));
+    if(!matchedDrug)return;
+    const condAgrav=item.conds_agrav.find(ca=>normConds.some(nc=>nc.includes(norm(ca))||norm(ca).includes(nc)));
+    const nivel=condAgrav?'vermelho':item.nivel;
+    const pillNivel=condAgrav?'vermelho':'laranja';
+    const riscoLabel=condAgrav?'Alerta elevado — condição agravante: '+condAgrav:item.risco;
+    const icone=condAgrav?'ti-alert-octagon':'ti-alert-triangle';
+    found=true;
+    lastResults.push({type:'beers',nivel,clase:item.clase,tabela:item.tabela,risco:riscoLabel,matchedDrug,motivo:item.motivo,condAgrav,alt_farm:item.alt_farm,alt_nfarm:item.alt_nfarm,fonte:item.fonte});
+    html+=`<div class="rc nivel-${nivel}"><div class="rt nivel-${nivel}"><i class="ti ${icone}"></i>${item.clase}<span class="pill ${pillNivel}">${riscoLabel}</span><span class="pill azul">${item.tabela}</span></div><div class="rb nivel-${nivel}"><strong>Medicamento:</strong> ${matchedDrug}<br><br><strong>Motivo:</strong> ${item.motivo}${condAgrav?`<br><br><strong>⚠ Condição agravante presente:</strong> <em>${condAgrav}</em> — combinação particularmente perigosa.`:''}${item.alt_farm.length?`<br><br><strong>Alternativas farmacológicas:</strong><br>${item.alt_farm.map(a=>`• ${a}`).join('<br>')}` :''}${item.alt_nfarm.length?`<br><br><strong>Estratégias não farmacológicas:</strong><br>${item.alt_nfarm.map(a=>`• ${a}`).join('<br>')}` :''}${item.desp?`<div class="desp-box"><div class="desp-title"><i class="ti ti-external-link" style="font-size:13px;"></i> Recurso de desprescrição</div><a class="desp-link" href="${item.desp.url}" target="_blank">${item.desp.titulo}</a></div>`:''}<br><br><span class="fonte-italic">${item.fonte}</span></div></div>`;
+  });
+
+  // INTERAÇÕES
+  INTERACOES.forEach(item=>{
+    const d1=medsArr.find(m=>match(m,item.drugs));
+    const d2=medsArr.find(m=>match(m,item.interagem_com));
+    if(!d1||!d2)return;
+    found=true;
+    lastResults.push({type:'interacao',alerta:item.alerta,d1,d2,motivo:item.motivo,rec:item.rec,fonte:item.fonte});
+    html+=`<div class="rc nivel-interacao"><div class="rt nivel-interacao"><i class="ti ti-bolt"></i>${item.alerta}<span class="pill interacao">Interação medicamentosa</span></div><div class="rb nivel-interacao"><strong>Fármacos:</strong> ${d1} + ${d2}<br><br><strong>Risco:</strong> ${item.motivo}<br><br><strong>Recomendação:</strong> ${item.rec}<br><br><span class="fonte-italic">${item.fonte}</span></div></div>`;
+  });
+
+  // STOPP
+  const STOPP_CRITERIA=[
+    {drugs:["ácido acetilsalicílico","aspirina","aas"],conds:[],criterio:"STOPP A1",descricao:"Aspirina para prevenção primária cardiovascular",motivo:"Ausência de benefício líquido; risco de sangramento supera benefício em idosos sem DCV estabelecida.",rec:"Suspender aspirina para prevenção primária. Manter apenas se DCV estabelecida (secundária).",desp:"https://deprescribing.org/resources/deprescribing-guidelines-algorithms/"},
+    {drugs:["glibenclamida","glibenclamide","glyburide","glimepirida","glimepiride","clorpropamida"],conds:[],criterio:"STOPP K2",descricao:"Sulfonilureia de longa ação",motivo:"Risco elevado de hipoglicemia prolongada e grave. STOPP K2 v3 2023.",rec:"Substituir por sulfonilureia de ação curta (glipizida) ou alternativa mais segura (DPP-4i, metformina, SGLT2i).",desp:"https://deprescribing.org/resources/deprescribing-guidelines-algorithms/"},
+    {drugs:["diazepam","lorazepam","alprazolam","clonazepam","midazolam","temazepam","triazolam","oxazepam","bromazepam","nitrazepam","clorazepato","estazolam"],conds:[],criterio:"STOPP D1",descricao:"Benzodiazepínico",motivo:"Risco de sedação, declínio cognitivo, delirium, quedas e fraturas em idosos. STOPP D1 v3 2023.",rec:"Desprescrição gradual com TCC-I para insônia ou psicoterapia para ansiedade.",desp:"https://deprescribing.org/resources/deprescribing-guidelines-algorithms/"},
+    {drugs:["zolpidem","eszopiclone","zaleplon","zopiclona"],conds:[],criterio:"STOPP D2",descricao:"Hipnótico Z-drug",motivo:"Mesmos riscos dos benzodiazepínicos. STOPP D2 v3 2023.",rec:"Desprescrição gradual com TCC-I para insônia.",desp:"https://deprescribing.org/resources/deprescribing-guidelines-algorithms/"},
+    {drugs:["amitriptilina","clomipramina","imipramina","doxepina","nortriptilina","trimipramina"],conds:[],criterio:"STOPP C1",descricao:"Antidepressivo tricíclico",motivo:"Altamente anticolinérgico; risco de retenção urinária, glaucoma, arritmias, hipotensão ortostática. STOPP C1 v3 2023.",rec:"Substituir por SSRI (escitalopram, sertralina). Desprescrição gradual.",desp:"https://deprescribing.org/resources/deprescribing-guidelines-algorithms/"},
+    {drugs:["haloperidol","clorpromazina","flufenazina","perfenazina","levomepromazina","risperidona","olanzapina","quetiapina"],conds:["demência","comprometimento cognitivo","delirium"],criterio:"STOPP D5",descricao:"Antipsicótico em demência/delirium",motivo:"Risco de AVC, declínio cognitivo acelerado e mortalidade em demência. STOPP D5 v3 2023.",rec:"Desprescrição com abordagem comportamental (DICE). Usar apenas em risco de dano imediato.",desp:"https://deprescribing.org/resources/deprescribing-guidelines-algorithms/"},
+    {drugs:["ibuprofeno","naproxeno","diclofenaco","piroxicam","indometacina","meloxicam","aceclofenaco","nimesulida","cetorolaco","ketorolac"],conds:[],criterio:"STOPP H2",descricao:"AINE não seletivo sistêmico",motivo:"Risco de sangramento GI, lesão renal, elevação de PA e exacerbação de IC. STOPP H2 v3 2023.",rec:"Substituir por paracetamol, AINEs tópicos ou capsaicina.",desp:"https://deprescribing.org/resources/deprescribing-guidelines-algorithms/"},
+    {drugs:["oxibutinina","oxybutynin","tolterodina","solifenacina","darifenacina","fesoterodina","tróspio","trospium"],conds:[],criterio:"STOPP G4",descricao:"Antimuscarínico para bexiga hiperativa",motivo:"Alta carga anticolinérgica; risco cognitivo especialmente com oxibutinina. STOPP G4 v3 2023.",rec:"Substituir por mirabegron (agonista β-3). Fisioterapia do assoalho pélvico como 1ª linha.",desp:"https://deprescribing.org/resources/deprescribing-guidelines-algorithms/"}
+  ];
+
+  STOPP_CRITERIA.forEach(item=>{
+    const matchedDrug=medsArr.find(m=>item.drugs.some(d=>{const nd=norm(d);const nm=norm(m);return nm.includes(nd)||nd.includes(nm);}));
+    if(!matchedDrug)return;
+    if(item.conds.length>0){
+      const condOk=item.conds.some(cond=>normConds.some(nc=>nc.includes(norm(cond))||norm(cond).includes(nc)));
+      if(!condOk)return;
+    }
+    found=true;
+    lastResults.push({type:'stopp',criterio:item.criterio,descricao:item.descricao,matchedDrug,motivo:item.motivo,rec:item.rec,desp:item.desp});
+    html+=`<div class="rc nivel-stopp"><div class="rt nivel-stopp"><i class="ti ti-ban"></i> STOPP v3 2023 — ${item.criterio} <span class="pill stopp">${item.descricao}</span></div><div class="rb nivel-stopp"><strong>Medicamento:</strong> ${matchedDrug}<br><br><strong>Motivo:</strong> ${item.motivo}<br><br><strong>Recomendação:</strong> ${item.rec}<div class="desp-box"><div class="desp-title"><i class="ti ti-external-link" style="font-size:13px;"></i> Algoritmo de desprescrição</div><a class="desp-link" href="${item.desp}" target="_blank">${item.desp}</a></div><br><span class="fonte-italic">Fonte: ${SRC3}</span></div></div>`;
+  });
+
+  // START
+  const START_CRITERIA=[
+    {conds:["fibrilação atrial"],drugs_ausentes:["apixabana","rivaroxabana","dabigatrana","edoxabana","varfarina","warfarina","warfarin"],criterio:"START A5",descricao:"Anticoagulante oral ausente em FA",motivo:"FA sem anticoagulante identificado. START v3 2023 recomenda anticoagulação para FA não valvar com risco de AVC (CHA₂DS₂-VASc ≥2 homens / ≥3 mulheres).",rec:"Avaliar indicação de anticoagulação. Preferir DOAC (apixabana como 1ª opção). Calcular CHA₂DS₂-VASc e HAS-BLED."},
+    {conds:["insuficiência cardíaca"],drugs_ausentes:["carvedilol","metoprolol","bisoprolol","nebivolol"],criterio:"START B2",descricao:"Betabloqueador ausente em IC",motivo:"IC sem betabloqueador identificado. START v3 2023 recomenda betabloqueador para ICFEr.",rec:"Avaliar indicação de betabloqueador (carvedilol, bisoprolol ou nebivolol) conforme tolerância."},
+    {conds:["osteoporose","histórico de quedas ou fraturas"],drugs_ausentes:["cálcio","vitamina d","colecalciferol","alendronato","risedronato","ibandronato","ácido zoledrônico","denosumabe"],criterio:"START E1",descricao:"Agente antiosteoporótico ausente",motivo:"Osteoporose ou histórico de quedas/fraturas sem agente antiosteoporótico. START v3 2023.",rec:"Iniciar vitamina D 800–1000 UI/dia e cálcio adequado. Avaliar bifosfonato conforme densidade óssea."},
+    {conds:["diabetes mellitus"],drugs_ausentes:["metformina","sitagliptina","linagliptina","saxagliptina","empagliflozina","dapagliflozina","canagliflozina","liraglutida","semaglutida"],criterio:"START K1",descricao:"Agente antidiabético seguro ausente em DM2",motivo:"Diabetes mellitus sem agente antidiabético seguro identificado. START v3 2023.",rec:"Avaliar início de metformina (se ClCr adequado) ou DPP-4i ou SGLT2i. Evitar sulfonilureias como 1ª linha."},
+    {conds:["depressão"],drugs_ausentes:["escitalopram","citalopram","sertralina","fluoxetina","paroxetina","venlafaxina","duloxetina","mirtazapina","bupropiona"],criterio:"START C3",descricao:"Antidepressivo ausente em depressão estabelecida",motivo:"Depressão sem antidepressivo identificado. START v3 2023.",rec:"Avaliar SSRI (escitalopram ou sertralina, preferidos em idosos). Associar psicoterapia (TCC)."}
+  ];
+
+  START_CRITERIA.forEach(item=>{
+    const condOk=item.conds.some(cond=>normConds.some(nc=>nc.includes(norm(cond))||norm(cond).includes(nc)));
+    if(!condOk)return;
+    const drugPresente=item.drugs_ausentes.some(d=>medsArr.some(m=>{const nd=norm(d);const nm=norm(m);return nm.includes(nd)||nd.includes(nm);}));
+    if(drugPresente)return;
+    found=true;
+    lastResults.push({type:'start',criterio:item.criterio,descricao:item.descricao,cond:item.conds[0],motivo:item.motivo,rec:item.rec});
+    html+=`<div class="rc nivel-start"><div class="rt nivel-start"><i class="ti ti-circle-plus"></i> START v3 2023 — ${item.criterio} <span class="pill start">${item.descricao}</span></div><div class="rb nivel-start"><strong>Condição clínica:</strong> ${item.conds.join(', ')}<br><br><strong>Medicamento possivelmente omitido:</strong> Nenhum agente correspondente identificado.<br><br><strong>Motivo:</strong> ${item.motivo}<br><br><strong>Recomendação:</strong> ${item.rec}<br><br><span class="fonte-italic">Fonte: ${SRC3}</span></div></div>`;
+  });
+
+  if(!found){
+    lastResults.push({type:'nenhum'});
+    html=`<div class="rc nivel-verde"><div class="rt nivel-verde"><i class="ti ti-circle-check"></i> Nenhum MPI identificado nos Critérios de Beers 2023</div><div class="rb nivel-verde">Os medicamentos inseridos não constam como potencialmente inapropriados na base atual. Esta verificação não substitui a avaliação clínica completa.<br><br><span class="fonte-italic">${SRC1}</span></div></div>`;
+  }
+
+  html+=`<div class="disclaimer"><strong>Fontes científicas:</strong><br>1. 2023 AGS Beers Criteria® Update Expert Panel. <em>J Am Geriatr Soc.</em> 2023;71(7):2052–2081. doi:10.1111/jgs.18372<br>2. Steinman MA et al. Alternative Treatments to Selected Medications in the 2023 AGS Beers Criteria®. <em>J Am Geriatr Soc.</em> 2025;73(9):2657–2677. doi:10.1111/jgs.19500<br>3. O'Mahony D et al. STOPP/START criteria v3. <em>Age Ageing.</em> 2023;52(1):afac279. doi:10.1093/ageing/afac279<br><br>Ferramenta de apoio clínico criada com auxílio de IA — Claude Sonnet 4.6 (Anthropic) — por solicitação da <strong>Profa. Dra. Angelina Monteiro Furtado</strong>. Não substitui o julgamento clínico individualizado.</div>`;
+  cont.innerHTML=html;
+  document.getElementById('export-panel').style.display='block';
+  const hoje=new Date();
+  document.getElementById('pdf-data').value=hoje.toISOString().split('T')[0];
+}
+
+function formatDate(val){
+  if(!val)return'—';
+  const[a,m,d]=val.split('-');
+  return`${d}/${m}/${a}`;
+}
+
+function gerarPDF(){
+  if(!lastResults||!lastResults.length){alert('Execute a verificação antes de gerar o relatório.');return;}
+  const paciente=document.getElementById('pdf-paciente').value.trim()||'Não informado';
+  const dataVal=document.getElementById('pdf-data').value;
+  const profissional=document.getElementById('pdf-profissional').value.trim()||'Não informado';
+  const registro=document.getElementById('pdf-registro').value.trim()||'';
+  const dateFmt=formatDate(dataVal)||new Date().toLocaleDateString('pt-BR');
+
+  let printHTML='';
+  lastResults.forEach(r=>{
+    if(r.type==='nenhum'){printHTML+='<div class="prc verde"><div class="prt verde">✓ Nenhum MPI identificado</div></div>';}
+    else if(r.type==='poli'){printHTML+=`<div class="prc poli"><div class="prt poli">⚠ Polifarmácia ${r.nivel==='grave'?'grave':''} — ${r.total} medicamentos</div><div class="prb">${r.msg}</div></div>`;}
+    else if(r.type==='snc'){printHTML+=`<div class="prc snc"><div class="prt snc">⚠ ≥3 fármacos SNC — ${r.totalClasses} classes</div><div class="prb">${r.alertMsg}</div></div>`;}
+    else if(r.type==='cascata'){printHTML+=`<div class="prc cascata"><div class="prt cascata">⚠ Cascata prescritiva — ${r.descricao}</div><div class="prb"><b>Combinação:</b> ${r.triggerMed} + ${r.causaMed}<br><b>Recomendação:</b> ${r.alternativa}</div></div>`;}
+    else if(r.type==='stopp'){printHTML+=`<div class="prc stopp"><div class="prt stopp">STOPP ${r.criterio}: ${r.descricao}</div><div class="prb"><b>Medicamento:</b> ${r.matchedDrug}<br><b>Recomendação:</b> ${r.rec}</div></div>`;}
+    else if(r.type==='start'){printHTML+=`<div class="prc start"><div class="prt start">✚ START ${r.criterio}: ${r.descricao}</div><div class="prb"><b>Condição:</b> ${r.cond}<br><b>Recomendação:</b> ${r.rec}</div></div>`;}
+    else if(r.type==='interacao'){printHTML+=`<div class="prc interacao"><div class="prt interacao">⚡ ${r.alerta}</div><div class="prb"><b>Fármacos:</b> ${r.d1} + ${r.d2}<br><b>Risco:</b> ${r.motivo}</div></div>`;}
+    else{const cor=r.nivel==='vermelho'?'vermelho':'laranja';printHTML+=`<div class="prc ${cor}"><div class="prt ${cor}">${r.nivel==='vermelho'?'⚠ ALERTA ELEVADO — ':'⚠ '}${r.clase}</div><div class="prb"><b>Medicamento:</b> ${r.matchedDrug}<br><b>Motivo:</b> ${r.motivo}${r.condAgrav?'<br><b>Condição agravante:</b> '+r.condAgrav:''}<br><b>Alternativas:</b> ${r.alt_farm.join('; ')}</div></div>`;}
+  });
+
+  const css='body{margin:0;padding:15mm 12mm;font-family:Arial,sans-serif;font-size:10pt;color:#1a1a18;background:#fff;}h1{font-size:13pt;font-weight:bold;margin:0 0 4px 0;}.cab{border-bottom:2px solid #1a1a18;padding-bottom:8px;margin-bottom:14px;}.cab p{font-size:9pt;color:#555;margin:0;}.meta{width:100%;border-collapse:collapse;margin-bottom:12px;background:#f5f5f2;}.meta td{padding:6px 8px;font-size:9pt;vertical-align:top;width:33%;}.meta label{display:block;font-size:8pt;color:#888;margin-bottom:2px;}.mc{width:100%;border-collapse:collapse;margin-bottom:14px;background:#f5f5f2;}.mc td{padding:6px 8px;font-size:9pt;vertical-align:top;width:50%;}.mc label{display:block;font-size:8pt;color:#888;font-weight:bold;margin-bottom:2px;}.prc{border-radius:4px;padding:9px 11px;margin-bottom:9px;page-break-inside:avoid;}.prc.vermelho{background:#FCEBEB;border-left:4px solid #E24B4A;}.prc.laranja{background:#FAEEDA;border-left:4px solid #EF9F27;}.prc.verde{background:#EAF3DE;border-left:4px solid #97C459;}.prc.interacao{background:#FCEBEB;border-left:4px solid #A32D2D;}.prc.poli{background:#F3EBFC;border-left:4px solid #8B3FC8;}.prc.snc{background:#E8F4FB;border-left:4px solid #2176AE;}.prc.cascata{background:#FFF4E5;border-left:4px solid #D4620A;}.prc.stopp{background:#FDECEA;border-left:4px solid #C0392B;}.prc.start{background:#E8F8F0;border-left:4px solid #1E8449;}.prt{font-size:10.5pt;font-weight:bold;margin-bottom:4px;}.prt.vermelho{color:#791F1F;}.prt.laranja{color:#633806;}.prt.verde{color:#27500A;}.prt.interacao{color:#501313;}.prt.poli{color:#4A1880;}.prt.snc{color:#0D3B66;}.prt.cascata{color:#7A3500;}.prt.stopp{color:#7B241C;}.prt.start{color:#145A32;}.prb{font-size:9pt;line-height:1.65;color:#333;}.ass{width:100%;border-collapse:collapse;margin-top:28px;}.ass td{text-align:center;padding:12px 20px;font-size:9pt;}.ass-linha{border-top:1px solid #1a1a18;margin-bottom:4px;}.ass-label{font-size:8.5pt;color:#555;}.rodape{font-size:7.5pt;color:#888;border-top:1px solid #ccc;padding-top:8px;margin-top:14px;line-height:1.5;}@page{margin:15mm 12mm;size:A4;}';
+  const assProfissional=profissional+(registro?' — '+registro:'');
+  const htmlFinal='<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Relatorio MPI</title><style>'+css+'</style></head><body><div class="cab"><h1>Relatório de Avaliação Farmacoterapêutica — MPI</h1><p>Critérios de Beers AGS 2023 · STOPP/START v3 2023 · Alternativas AGS 2025 · Profa. Dra. Angelina Monteiro Furtado</p></div><table class="meta"><tr><td><label>Paciente</label><strong>'+paciente+'</strong></td><td><label>Data</label><strong>'+dateFmt+'</strong></td><td><label>Profissional</label><strong>'+assProfissional+'</strong></td></tr></table><table class="mc"><tr><td><label>Medicamentos</label>'+(medsArr.join(', ')||'—')+'</td><td><label>Condições clínicas</label>'+(condsArr.join(', ')||'—')+'</td></tr></table>'+printHTML+'<table class="ass"><tr><td width="50%"><div class="ass-linha"></div><div class="ass-label">'+assProfissional+'</div></td><td width="50%"><div class="ass-linha"></div><div class="ass-label">Data e Carimbo</div></td></tr></table><div class="rodape">1. 2023 AGS Beers Criteria® Update Expert Panel. J Am Geriatr Soc. 2023;71(7):2052–2081.<br>2. Steinman MA et al. J Am Geriatr Soc. 2025;73(9):2657–2677.<br>3. O\'Mahony D et al. Age Ageing. 2023;52(1):afac279.<br>Finalidade educativa. Não substitui o julgamento clínico individualizado.</div></body></html>';
+
+  const nomeArq='relatorio_MPI_'+paciente.replace(/\s+/g,'_')+'_'+dateFmt.replace(/\//g,'-')+'.html';
+  const blob=new Blob([htmlFinal],{type:'text/html;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=nomeArq;a.style.display='none';
+  document.body.appendChild(a);a.click();
+  setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url);alert('Arquivo baixado!\n\nPara PDF: abra no navegador → Ctrl+P → "Salvar como PDF"');},500);
+}
+
+function gerarWord(){
+  if(!lastResults||!lastResults.length){alert('Execute a verificação antes de exportar.');return;}
+  const paciente=document.getElementById('pdf-paciente').value.trim()||'Não informado';
+  const dataVal=document.getElementById('pdf-data').value;
+  const profissional=document.getElementById('pdf-profissional').value.trim()||'Não informado';
+  const registro=document.getElementById('pdf-registro').value.trim()||'';
+  const dateFmt=formatDate(dataVal)||new Date().toLocaleDateString('pt-BR');
+
+  let alertasHtml='';
+  lastResults.forEach(r=>{
+    if(r.type==='nenhum'){alertasHtml+='<p style="background:#EAF3DE;padding:10px;border-left:4px solid #97C459;"><b>✓ Nenhum MPI identificado</b></p>';}
+    else if(r.type==='poli'){alertasHtml+=`<p style="background:#F3EBFC;padding:10px;border-left:4px solid #8B3FC8;"><b>⚠ Polifarmácia ${r.nivel==='grave'?'grave':''} — ${r.total} medicamentos</b><br>${r.msg}</p>`;}
+    else if(r.type==='stopp'){alertasHtml+=`<p style="background:#FDECEA;padding:10px;border-left:4px solid #C0392B;"><b>STOPP ${r.criterio}: ${r.descricao}</b><br><b>Medicamento:</b> ${r.matchedDrug}<br><b>Recomendação:</b> ${r.rec}</p>`;}
+    else if(r.type==='start'){alertasHtml+=`<p style="background:#E8F8F0;padding:10px;border-left:4px solid #1E8449;"><b>✚ START ${r.criterio}: ${r.descricao}</b><br><b>Condição:</b> ${r.cond}<br><b>Recomendação:</b> ${r.rec}</p>`;}
+    else if(r.type==='interacao'){alertasHtml+=`<p style="background:#FCEBEB;padding:10px;border-left:4px solid #A32D2D;"><b>⚡ ${r.alerta}</b><br><b>Fármacos:</b> ${r.d1} + ${r.d2}<br><b>Risco:</b> ${r.motivo}</p>`;}
+    else if(r.type==='beers'){const bg=r.nivel==='vermelho'?'#FCEBEB':'#FAEEDA';const border=r.nivel==='vermelho'?'#E24B4A':'#EF9F27';alertasHtml+=`<p style="background:${bg};padding:10px;border-left:4px solid ${border};"><b>${r.nivel==='vermelho'?'⚠ ALERTA ELEVADO — ':'⚠ '}${r.clase}</b><br><b>Medicamento:</b> ${r.matchedDrug}<br><b>Motivo:</b> ${r.motivo}${r.condAgrav?'<br><b>Condição agravante:</b> '+r.condAgrav:''}<br><b>Alternativas:</b> ${r.alt_farm.join('; ')}</p>`;}
+  });
+
+  const assProfissional=profissional+(registro?' — '+registro:'');
+  const wordHtml=`<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><style>body{font-family:Arial,sans-serif;font-size:11pt;margin:2cm;}h1{font-size:14pt;border-bottom:2px solid #1a1a18;padding-bottom:6px;}table{border-collapse:collapse;width:100%;margin:10px 0;}td,th{border:1px solid #ccc;padding:6px 10px;font-size:10pt;}th{background:#f5f5f2;font-weight:bold;}p{margin:8px 0;font-size:10pt;line-height:1.6;}.sign-table{width:100%;margin-top:40px;}.sign-table td{border:none;text-align:center;padding:0 20px;}.sign-line{border-top:1px solid #1a1a18;margin-bottom:4px;}</style></head><body><h1>Relatório de Avaliação Farmacoterapêutica — MPI</h1><p><i>Beers AGS 2023 · STOPP/START v3 2023 · Alternativas AGS 2025 · Profa. Dra. Angelina Monteiro Furtado</i></p><table><tr><th>Paciente</th><td>${paciente}</td></tr><tr><th>Data</th><td>${dateFmt}</td></tr><tr><th>Profissional</th><td>${assProfissional}</td></tr><tr><th>Medicamentos</th><td>${medsArr.join(', ')||'—'}</td></tr><tr><th>Condições clínicas</th><td>${condsArr.join(', ')||'—'}</td></tr></table><h2>Alertas e Recomendações</h2>${alertasHtml}<table class="sign-table"><tr><td width="50%"><div class="sign-line"></div><div style="font-size:9pt;">${assProfissional}</div></td><td width="50%"><div class="sign-line"></div><div style="font-size:9pt;">Data e Carimbo</div></td></tr></table><p style="font-size:8pt;color:#888;border-top:1px solid #ccc;padding-top:8px;margin-top:14px;">Finalidade educativa. Não substitui o julgamento clínico individualizado.</p></body></html>`;
+
+  const blob=new Blob(['\ufeff'+wordHtml],{type:'application/msword'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download='relatorio_MPI_'+paciente.replace(/\s+/g,'_')+'_'+dateFmt.replace(/\//g,'-')+'.doc';
+  document.body.appendChild(a);a.click();
+  setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url);},1000);
+}
+</script>
+</body>
+</html>
