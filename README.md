@@ -32,9 +32,9 @@ Inclui ainda:
 
 A ferramenta funciona diretamente no navegador, sem instalação:
 
-**Acesso online:** [link do GitHub Pages aqui]
+**Acesso online:** [ https://angelinamonteiro1-wq.github.io/verificador-mpi/]
 
-Ou baixe o arquivo `index.html` e abra no navegador de sua preferência (Chrome, Firefox, Edge, Safari). Não requer conexão com internet após o download.
+Não requer conexão com internet após o download.
 
 ---
 
